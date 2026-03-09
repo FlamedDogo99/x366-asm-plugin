@@ -9,7 +9,6 @@ import java.util.Set;
 
 public class AsmLexer extends LexerBase {
 
-    // ── token sets ──────────────────────────────────────────────────────────
     private static final Set<String> KEYWORDS = Set.of(
         "MOV","MOVB","ADD","SUB","MUL","DIV","INC","DEC",
         "AND","OR","XOR","NOT","SHL","SHR","CMP","TEST",
@@ -115,7 +114,7 @@ public class AsmLexer extends LexerBase {
                 while(end < bufferEnd && isHexDigit(buffer.charAt(end))) {
                   end++;
                 }
-                tokenType = AsmTokenTypes.NUMBER;
+                tokenType = AsmTokenTypes.NUMBER_HEX;
                 return;
             }
             if(next == 'b' || next == 'B') {
@@ -123,7 +122,7 @@ public class AsmLexer extends LexerBase {
                 while(end < bufferEnd && (buffer.charAt(end) == '0' || buffer.charAt(end) == '1')) {
                   end++;
                 }
-                tokenType = AsmTokenTypes.NUMBER;
+                tokenType = AsmTokenTypes.NUMBER_BINARY;
                 return;
             }
         }
@@ -133,16 +132,6 @@ public class AsmLexer extends LexerBase {
               end++;
             }
             tokenType = AsmTokenTypes.NUMBER;
-            return;
-        }
-
-        // Directives: .MEMORY, .DATA, .CODE etc.
-        if(c == '.') {
-            end = start + 1;
-            while(end < bufferEnd && (Character.isLetterOrDigit(buffer.charAt(end)) || buffer.charAt(end) == '_')){
-              end++;
-            }
-            tokenType = AsmTokenTypes.DIRECTIVE;
             return;
         }
 

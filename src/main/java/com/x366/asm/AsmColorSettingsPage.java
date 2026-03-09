@@ -15,7 +15,9 @@ public class AsmColorSettingsPage implements ColorSettingsPage {
         new AttributesDescriptor("Instruction", AsmTextAttributeKeys.KEYWORD),
         new AttributesDescriptor("Syscall", AsmTextAttributeKeys.SYSCALL),
         new AttributesDescriptor("String", AsmTextAttributeKeys.STRING),
-        new AttributesDescriptor("Number", AsmTextAttributeKeys.NUMBER),
+        new AttributesDescriptor("Number//Decimal",AsmTextAttributeKeys.NUMBER),
+        new AttributesDescriptor("Number//Hex", AsmTextAttributeKeys.NUMBER_HEX),
+        new AttributesDescriptor("Number//Binary", AsmTextAttributeKeys.NUMBER_BINARY),
         new AttributesDescriptor("Register", AsmTextAttributeKeys.REGISTER),
         new AttributesDescriptor("Label", AsmTextAttributeKeys.LABEL),
         new AttributesDescriptor("Operator", AsmTextAttributeKeys.OPERATOR),
@@ -45,10 +47,10 @@ public class AsmColorSettingsPage implements ColorSettingsPage {
     public String getDemoText() {
         return """
                 ; x366 Assembly demo
-                .MEMORY 8K
                 start:
                     MOV AX, 42
                     MOV BX, 0xFF
+                    MOV CX, 0b1010
                     ADD AX, BX
                     SYSCALL PRINT_INT
                     MOV CX, "hello"

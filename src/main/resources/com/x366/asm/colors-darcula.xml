@@ -29,8 +29,22 @@
     </value>
   </option>
 
-  <!-- number / hex / binary  #B5CEA8 -->
+  <!-- number (decimal)  #B5CEA8 -->
   <option name="ASM_NUMBER">
+    <value>
+      <option name="FOREGROUND" value="B5CEA8"/>
+    </value>
+  </option>
+
+  <!-- number hex  #B5CEA8 (same default, user can override) -->
+  <option name="ASM_NUMBER_HEX">
+    <value>
+      <option name="FOREGROUND" value="B5CEA8"/>
+    </value>
+  </option>
+
+  <!-- number binary  #B5CEA8 -->
+  <option name="ASM_NUMBER_BINARY">
     <value>
       <option name="FOREGROUND" value="B5CEA8"/>
     </value>
@@ -47,26 +61,6 @@
   <option name="ASM_LABEL">
     <value>
       <option name="FOREGROUND" value="4EC9B0"/>
-    </value>
-  </option>
-
-  <!-- operator  #D4D4D4 -->
-  <option name="ASM_OPERATOR">
-    <value>
-      <option name="FOREGROUND" value="D4D4D4"/>
-    </value>
-  </option>
-
-  <!-- delimiter  #D4D4D4 -->
-  <option name="ASM_DELIMITER">
-    <value>
-      <option name="FOREGROUND" value="D4D4D4"/>
-    </value>
-  </option>
-  <!-- directive (.MEMORY etc)  #569CD6 -->
-  <option name="ASM_DIRECTIVE">
-    <value>
-      <option name="FOREGROUND" value="569CD6"/>
     </value>
   </option>
 

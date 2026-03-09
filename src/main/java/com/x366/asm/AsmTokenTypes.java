@@ -9,6 +9,8 @@ public interface AsmTokenTypes {
     IElementType SYSCALL = new AsmElementType("SYSCALL");
     IElementType STRING = new AsmElementType("STRING");
     IElementType NUMBER = new AsmElementType("NUMBER");
+    IElementType NUMBER_HEX = new AsmElementType("NUMBER_HEX");
+    IElementType NUMBER_BINARY = new AsmElementType("NUMBER_BINARY");
     IElementType REGISTER = new AsmElementType("REGISTER");
     IElementType LABEL = new AsmElementType("LABEL");
     IElementType DIRECTIVE = new AsmElementType("DIRECTIVE");

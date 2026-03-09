@@ -5,13 +5,13 @@ import static com.intellij.openapi.editor.colors.TextAttributesKey.createTextAtt
 import com.intellij.openapi.editor.DefaultLanguageHighlighterColors;
 
 public interface AsmTextAttributeKeys {
-    // Each key references a fallback from the standard Darcula palette so the
-    // plugin works out-of-the-box even without the custom color XML.
     TextAttributesKey COMMENT = createTextAttributesKey("ASM_COMMENT", DefaultLanguageHighlighterColors.LINE_COMMENT);
     TextAttributesKey KEYWORD = createTextAttributesKey("ASM_KEYWORD", DefaultLanguageHighlighterColors.KEYWORD);
     TextAttributesKey SYSCALL = createTextAttributesKey("ASM_SYSCALL", DefaultLanguageHighlighterColors.FUNCTION_DECLARATION);
     TextAttributesKey STRING = createTextAttributesKey("ASM_STRING", DefaultLanguageHighlighterColors.STRING);
     TextAttributesKey NUMBER = createTextAttributesKey("ASM_NUMBER", DefaultLanguageHighlighterColors.NUMBER);
+    TextAttributesKey NUMBER_HEX = createTextAttributesKey("ASM_NUMBER_HEX", DefaultLanguageHighlighterColors.NUMBER);
+    TextAttributesKey NUMBER_BINARY = createTextAttributesKey("ASM_NUMBER_BINARY", DefaultLanguageHighlighterColors.NUMBER);
     TextAttributesKey REGISTER = createTextAttributesKey("ASM_REGISTER", DefaultLanguageHighlighterColors.INSTANCE_FIELD);
     TextAttributesKey LABEL = createTextAttributesKey("ASM_LABEL", DefaultLanguageHighlighterColors.CLASS_NAME);
     TextAttributesKey OPERATOR = createTextAttributesKey("ASM_OPERATOR", DefaultLanguageHighlighterColors.OPERATION_SIGN);

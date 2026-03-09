@@ -16,6 +16,8 @@ public class AsmSyntaxHighlighter extends SyntaxHighlighterBase {
         Map.entry(AsmTokenTypes.SYSCALL, AsmTextAttributeKeys.SYSCALL),
         Map.entry(AsmTokenTypes.STRING, AsmTextAttributeKeys.STRING),
         Map.entry(AsmTokenTypes.NUMBER, AsmTextAttributeKeys.NUMBER),
+        Map.entry(AsmTokenTypes.NUMBER_HEX, AsmTextAttributeKeys.NUMBER_HEX),
+        Map.entry(AsmTokenTypes.NUMBER_BINARY, AsmTextAttributeKeys.NUMBER_BINARY),
         Map.entry(AsmTokenTypes.REGISTER, AsmTextAttributeKeys.REGISTER),
         Map.entry(AsmTokenTypes.LABEL, AsmTextAttributeKeys.LABEL),
         Map.entry(AsmTokenTypes.OPERATOR, AsmTextAttributeKeys.OPERATOR),

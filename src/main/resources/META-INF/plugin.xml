@@ -8,6 +8,7 @@
 
     <extensions defaultExtensionNs="com.intellij">
 
+        <!-- 1. Register the language -->
         <fileType
             name="x366 ASM"
             implementationClass="com.x366.asm.AsmFileType"
@@ -15,10 +16,12 @@
             language="x366ASM"
             extensions="asm" />
 
+        <!-- 2. Wire up the syntax highlighter -->
         <lang.syntaxHighlighterFactory
             language="x366ASM"
             implementationClass="com.x366.asm.AsmSyntaxHighlighterFactory" />
 
+        <!-- 3. Register color scheme entries (shows in Settings → Colors) -->
         <additionalTextAttributes
             scheme="Darcula"
             file="com/x366/asm/colors-darcula.xml" />
