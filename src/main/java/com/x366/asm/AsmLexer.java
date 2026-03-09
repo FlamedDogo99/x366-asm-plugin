@@ -134,6 +134,13 @@ public class AsmLexer extends LexerBase {
             tokenType = AsmTokenTypes.NUMBER;
             return;
         }
+        // Directives, for example .MEMORY
+        if (c == '.') {
+            end = start + 1;
+            while (end < bufferEnd && (Character.isLetterOrDigit(buffer.charAt(end)) || buffer.charAt(end) == '_')) end++;
+            tokenType = AsmTokenTypes.IDENTIFIER;
+            return;
+        }
 
         // Identifiers, keywords, registers, syscalls, labels
         if(Character.isLetter(c) || c == '_') {
