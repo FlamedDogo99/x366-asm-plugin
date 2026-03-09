@@ -1,0 +1,29 @@
+<idea-plugin>
+    <id>com.x366.asm</id>
+    <name>x366 ASM</name>
+    <vendor>FlamedDogo99</vendor>
+    <description>Syntax highlighting for x366 assembly (.asm) files.</description>
+
+    <depends>com.intellij.modules.platform</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+
+        <fileType
+            name="x366 ASM"
+            implementationClass="com.x366.asm.AsmFileType"
+            fieldName="INSTANCE"
+            language="x366ASM"
+            extensions="asm" />
+
+        <lang.syntaxHighlighterFactory
+            language="x366ASM"
+            implementationClass="com.x366.asm.AsmSyntaxHighlighterFactory" />
+
+        <additionalTextAttributes
+            scheme="Darcula"
+            file="com/x366/asm/colors-darcula.xml" />
+        <colorSettingsPage
+            implementation="com.x366.asm.AsmColorSettingsPage" />
+
+    </extensions>
+</idea-plugin>
