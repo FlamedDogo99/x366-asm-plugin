@@ -1,7 +1,9 @@
 package com.x366.asm;
 
 import com.intellij.openapi.editor.colors.TextAttributesKey;
+
 import static com.intellij.openapi.editor.colors.TextAttributesKey.createTextAttributesKey;
+
 import com.intellij.openapi.editor.DefaultLanguageHighlighterColors;
 
 public interface AsmTextAttributeKeys {

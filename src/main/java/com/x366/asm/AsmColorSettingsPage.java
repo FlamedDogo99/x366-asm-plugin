@@ -5,6 +5,7 @@ import com.intellij.openapi.fileTypes.SyntaxHighlighter;
 import com.intellij.openapi.options.colors.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
 import javax.swing.*;
 import java.util.Map;
 
@@ -15,7 +16,7 @@ public class AsmColorSettingsPage implements ColorSettingsPage {
         new AttributesDescriptor("Instruction", AsmTextAttributeKeys.KEYWORD),
         new AttributesDescriptor("Syscall", AsmTextAttributeKeys.SYSCALL),
         new AttributesDescriptor("String", AsmTextAttributeKeys.STRING),
-        new AttributesDescriptor("Number//Decimal",AsmTextAttributeKeys.NUMBER),
+        new AttributesDescriptor("Number//Decimal", AsmTextAttributeKeys.NUMBER),
         new AttributesDescriptor("Number//Hex", AsmTextAttributeKeys.NUMBER_HEX),
         new AttributesDescriptor("Number//Binary", AsmTextAttributeKeys.NUMBER_BINARY),
         new AttributesDescriptor("Register", AsmTextAttributeKeys.REGISTER),
@@ -26,36 +27,56 @@ public class AsmColorSettingsPage implements ColorSettingsPage {
         new AttributesDescriptor("Directive", AsmTextAttributeKeys.DIRECTIVE),
     };
 
-    @NotNull @Override public String getDisplayName() {
-      return "x366 ASM";
-    }
-    @Nullable @Override public Icon getIcon() { return null; }
-    @NotNull @Override public SyntaxHighlighter getHighlighter() {
-      return new AsmSyntaxHighlighter();
-    }
-    @NotNull @Override public AttributesDescriptor[] getAttributeDescriptors() {
-      return DESCRIPTORS;
-    }
-    @NotNull @Override public ColorDescriptor[] getColorDescriptors() {
-      return ColorDescriptor.EMPTY_ARRAY;
-    }
-    @Nullable @Override public Map<String, TextAttributesKey> getAdditionalHighlightingTagToDescriptorMap() {
-      return null;
+    @NotNull
+    @Override
+    public String getDisplayName() {
+        return "x366 ASM";
     }
 
-    @NotNull @Override
+    @Nullable
+    @Override
+    public Icon getIcon() {
+        return null;
+    }
+
+    @NotNull
+    @Override
+    public SyntaxHighlighter getHighlighter() {
+        return new AsmSyntaxHighlighter();
+    }
+
+    @NotNull
+    @Override
+    public AttributesDescriptor[] getAttributeDescriptors() {
+        return DESCRIPTORS;
+    }
+
+    @NotNull
+    @Override
+    public ColorDescriptor[] getColorDescriptors() {
+        return ColorDescriptor.EMPTY_ARRAY;
+    }
+
+    @Nullable
+    @Override
+    public Map<String, TextAttributesKey> getAdditionalHighlightingTagToDescriptorMap() {
+        return null;
+    }
+
+    @NotNull
+    @Override
     public String getDemoText() {
         return """
-                ; x366 Assembly demo
-                start:
-                    MOV AX, 42
-                    MOV BX, 0xFF
-                    MOV CX, 0b1010
-                    ADD AX, BX
-                    SYSCALL PRINT_INT
-                    MOV CX, "hello"
-                    JNE start
-                    HLT
-                """;
+            ; x366 Assembly demo
+            start:
+                MOV AX, 42
+                MOV BX, 0xFF
+                MOV CX, 0b1010
+                ADD AX, BX
+                SYSCALL PRINT_INT
+                MOV CX, "hello"
+                JNE start
+                HLT
+            """;
     }
 }

@@ -10,24 +10,24 @@ import java.util.Set;
 public class AsmLexer extends LexerBase {
 
     private static final Set<String> KEYWORDS = Set.of(
-        "MOV","MOVB","ADD","SUB","MUL","DIV","INC","DEC",
-        "AND","OR","XOR","NOT","SHL","SHR","CMP","TEST",
-        "JMP","JE","JNE","JZ","JNZ","JG","JGE","JL","JLE",
-        "JA","JAE","JB","JBE","PUSH","POP","CALL","RET",
-        "SYSCALL","NOP","HLT","DB","DW","DUP"
+        "MOV", "MOVB", "ADD", "SUB", "MUL", "DIV", "INC", "DEC",
+        "AND", "OR", "XOR", "NOT", "SHL", "SHR", "CMP", "TEST",
+        "JMP", "JE", "JNE", "JZ", "JNZ", "JG", "JGE", "JL", "JLE",
+        "JA", "JAE", "JB", "JBE", "PUSH", "POP", "CALL", "RET",
+        "SYSCALL", "NOP", "HLT", "DB", "DW", "DUP"
     );
 
     private static final Set<String> SYSCALLS = Set.of(
-        "EXIT","PRINT_CHAR","PRINT_INT","PRINT_STRING",
-        "READ_CHAR","READ_INT","READ_STRING","CLEAR_SCREEN",
-        "DRAW_PIXEL","DRAW_RECT","DRAW_LINE","READ_PIXEL",
-        "FLUSH_SCREEN","SBRK","MALLOC","FREE",
-        "ATOI","SLEEP","OPEN_FILE","READ_FILE","WRITE_FILE","CLOSE_FILE"
+        "EXIT", "PRINT_CHAR", "PRINT_INT", "PRINT_STRING",
+        "READ_CHAR", "READ_INT", "READ_STRING", "CLEAR_SCREEN",
+        "DRAW_PIXEL", "DRAW_RECT", "DRAW_LINE", "READ_PIXEL",
+        "FLUSH_SCREEN", "SBRK", "MALLOC", "FREE",
+        "ATOI", "SLEEP", "OPEN_FILE", "READ_FILE", "WRITE_FILE", "CLOSE_FILE"
     );
 
     private static final Set<String> REGISTERS = Set.of(
-        "AX","BX","CX","DX","EX","FX","SP","FP",
-        "AL","BL","CL","DL","EL","FL"
+        "AX", "BX", "CX", "DX", "EX", "FX", "SP", "FP",
+        "AL", "BL", "CL", "DL", "EL", "FL"
     );
 
     private CharSequence buffer;
@@ -43,29 +43,43 @@ public class AsmLexer extends LexerBase {
         advance();
     }
 
-    @Override public int getState() {
-      return 0;
+    @Override
+    public int getState() {
+        return 0;
     }
-    @Override public @Nullable IElementType getTokenType() {
-      return tokenType;
+
+    @Override
+    public @Nullable IElementType getTokenType() {
+        return tokenType;
     }
-    @Override public int getTokenStart() {
-      return start;
+
+    @Override
+    public int getTokenStart() {
+        return start;
     }
-    @Override public int getTokenEnd() {
-      return end;
+
+    @Override
+    public int getTokenEnd() {
+        return end;
     }
-    @Override public @NotNull CharSequence getBufferSequence() {
-      return buffer;
+
+    @Override
+    public @NotNull CharSequence getBufferSequence() {
+        return buffer;
     }
-    @Override public int getBufferEnd() {
-      return bufferEnd;
+
+    @Override
+    public int getBufferEnd() {
+        return bufferEnd;
     }
 
     @Override
     public void advance() {
         start = end;
-        if(start >= bufferEnd) { tokenType = null; return; }
+        if(start >= bufferEnd) {
+            tokenType = null;
+            return;
+        }
 
         char c = buffer.charAt(start);
 
@@ -73,7 +87,7 @@ public class AsmLexer extends LexerBase {
         if(Character.isWhitespace(c)) {
             end = start + 1;
             while(end < bufferEnd && Character.isWhitespace(buffer.charAt(end))) {
-              end++;
+                end++;
             }
             tokenType = AsmTokenTypes.WHITE_SPACE;
             return;
@@ -83,23 +97,23 @@ public class AsmLexer extends LexerBase {
         if(c == ';') {
             end = start;
             while(end < bufferEnd && buffer.charAt(end) != '\n') {
-              end++;
+                end++;
             }
             tokenType = AsmTokenTypes.COMMENT;
             return;
         }
 
-        // String  "..."
-        if(c == '"') {
+        // String  "..." and '...'
+        if(c == '"' || c == '\'') {
             end = start + 1;
             while(end < bufferEnd) {
                 char ch = buffer.charAt(end++);
                 if(ch == '\\') {
-                  if(end < bufferEnd) {
-                    end++;
-                  }
-                } else if(ch == '"') {
-                  break;
+                    if(end < bufferEnd) {
+                        end++;
+                    }
+                } else if(ch == c) {
+                    break;
                 }
             }
             tokenType = AsmTokenTypes.STRING;
@@ -112,7 +126,7 @@ public class AsmLexer extends LexerBase {
             if(next == 'x' || next == 'X') {
                 end = start + 2;
                 while(end < bufferEnd && isHexDigit(buffer.charAt(end))) {
-                  end++;
+                    end++;
                 }
                 tokenType = AsmTokenTypes.NUMBER_HEX;
                 return;
@@ -120,7 +134,7 @@ public class AsmLexer extends LexerBase {
             if(next == 'b' || next == 'B') {
                 end = start + 2;
                 while(end < bufferEnd && (buffer.charAt(end) == '0' || buffer.charAt(end) == '1')) {
-                  end++;
+                    end++;
                 }
                 tokenType = AsmTokenTypes.NUMBER_BINARY;
                 return;
@@ -129,15 +143,17 @@ public class AsmLexer extends LexerBase {
         if(Character.isDigit(c)) {
             end = start;
             while(end < bufferEnd && Character.isDigit(buffer.charAt(end))) {
-              end++;
+                end++;
             }
             tokenType = AsmTokenTypes.NUMBER;
             return;
         }
         // Directives, for example .MEMORY
-        if (c == '.') {
+        if(c == '.') {
             end = start + 1;
-            while (end < bufferEnd && (Character.isLetterOrDigit(buffer.charAt(end)) || buffer.charAt(end) == '_')) end++;
+            while(end < bufferEnd && (Character.isLetterOrDigit(buffer.charAt(end)) || buffer.charAt(end) == '_')) {
+                end++;
+            }
             tokenType = AsmTokenTypes.IDENTIFIER;
             return;
         }
@@ -146,7 +162,7 @@ public class AsmLexer extends LexerBase {
         if(Character.isLetter(c) || c == '_') {
             end = start;
             while(end < bufferEnd && (Character.isLetterOrDigit(buffer.charAt(end)) || buffer.charAt(end) == '_')) {
-              end++;
+                end++;
             }
             String word = buffer.subSequence(start, end).toString();
 
@@ -158,17 +174,17 @@ public class AsmLexer extends LexerBase {
             }
 
             String upper = word.toUpperCase();
-            if(KEYWORDS.contains(upper)){
-              tokenType = AsmTokenTypes.KEYWORD;
-              return;
+            if(KEYWORDS.contains(upper)) {
+                tokenType = AsmTokenTypes.KEYWORD;
+                return;
             }
             if(SYSCALLS.contains(upper)) {
-              tokenType = AsmTokenTypes.SYSCALL;
-              return;
+                tokenType = AsmTokenTypes.SYSCALL;
+                return;
             }
-            if(REGISTERS.contains(upper)){
-              tokenType = AsmTokenTypes.REGISTER;
-              return;
+            if(REGISTERS.contains(upper)) {
+                tokenType = AsmTokenTypes.REGISTER;
+                return;
             }
             tokenType = AsmTokenTypes.IDENTIFIER;
             return;

@@ -8,7 +8,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class AsmSyntaxHighlighterFactory extends SyntaxHighlighterFactory {
-    @NotNull @Override
+    @NotNull
+    @Override
     public SyntaxHighlighter getSyntaxHighlighter(@Nullable Project project, @Nullable VirtualFile virtualFile) {
         return new AsmSyntaxHighlighter();
     }
