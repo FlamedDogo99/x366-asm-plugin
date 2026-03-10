@@ -24,6 +24,34 @@
             file="com/x366/asm/colors-darcula.xml" />
         <colorSettingsPage
             implementation="com.x366.asm.AsmColorSettingsPage" />
+        <psi.referenceContributor
+                language="x366ASM"
+                implementation="com.x366.asm.AsmReferenceContributor" />
+
+        <completion.contributor
+                language="x366ASM"
+                implementationClass="com.x366.asm.AsmCompletionContributor" />
+
+        <lang.commenter
+                language="x366ASM"
+                implementationClass="com.x366.asm.AsmCommenter" />
+
+        <spellchecker.support
+                language="x366ASM"
+                implementationClass="com.x366.asm.AsmSpellcheckingStrategy" />
+
+        <annotator
+                language="x366ASM"
+                implementationClass="com.x366.asm.AsmAnnotator" />
+
+        <lang.foldingBuilder
+                language="x366ASM"
+                implementationClass="com.x366.asm.AsmFoldingBuilder" />
+
+        <enterHandlerDelegate
+                implementation="com.x366.asm.AsmEnterHandler" />
+        <lineIndentProvider
+                implementation="com.x366.asm.AsmLineIndentProvider" />
 
     </extensions>
 </idea-plugin>

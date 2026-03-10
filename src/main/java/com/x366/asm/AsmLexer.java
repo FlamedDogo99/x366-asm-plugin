@@ -9,7 +9,7 @@ import java.util.Set;
 
 public class AsmLexer extends LexerBase {
 
-    private static final Set<String> KEYWORDS = Set.of(
+    public static final Set<String> KEYWORD_SET = Set.of(
         "MOV", "MOVB", "ADD", "SUB", "MUL", "DIV", "INC", "DEC",
         "AND", "OR", "XOR", "NOT", "SHL", "SHR", "CMP", "TEST",
         "JMP", "JE", "JNE", "JZ", "JNZ", "JG", "JGE", "JL", "JLE",
@@ -17,7 +17,7 @@ public class AsmLexer extends LexerBase {
         "SYSCALL", "NOP", "HLT", "DB", "DW", "DUP"
     );
 
-    private static final Set<String> SYSCALLS = Set.of(
+    public static final Set<String> SYSCALL_SET = Set.of(
         "EXIT", "PRINT_CHAR", "PRINT_INT", "PRINT_STRING",
         "READ_CHAR", "READ_INT", "READ_STRING", "CLEAR_SCREEN",
         "DRAW_PIXEL", "DRAW_RECT", "DRAW_LINE", "READ_PIXEL",
@@ -25,7 +25,7 @@ public class AsmLexer extends LexerBase {
         "ATOI", "SLEEP", "OPEN_FILE", "READ_FILE", "WRITE_FILE", "CLOSE_FILE"
     );
 
-    private static final Set<String> REGISTERS = Set.of(
+    public static final Set<String> REGISTER_SET = Set.of(
         "AX", "BX", "CX", "DX", "EX", "FX", "SP", "FP",
         "AL", "BL", "CL", "DL", "EL", "FL"
     );
@@ -174,15 +174,15 @@ public class AsmLexer extends LexerBase {
             }
 
             String upper = word.toUpperCase();
-            if(KEYWORDS.contains(upper)) {
+            if(KEYWORD_SET.contains(upper)) {
                 tokenType = AsmTokenTypes.KEYWORD;
                 return;
             }
-            if(SYSCALLS.contains(upper)) {
+            if(SYSCALL_SET.contains(upper)) {
                 tokenType = AsmTokenTypes.SYSCALL;
                 return;
             }
-            if(REGISTERS.contains(upper)) {
+            if(REGISTER_SET.contains(upper)) {
                 tokenType = AsmTokenTypes.REGISTER;
                 return;
             }
