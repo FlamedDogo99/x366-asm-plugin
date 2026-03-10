@@ -8,7 +8,6 @@
 
     <extensions defaultExtensionNs="com.intellij">
 
-
         <fileType
             name="x366 ASM"
             implementationClass="com.x366.asm.AsmFileType"
@@ -16,11 +15,9 @@
             language="x366ASM"
             extensions="asm" />
 
-
         <lang.syntaxHighlighterFactory
             language="x366ASM"
             implementationClass="com.x366.asm.AsmSyntaxHighlighterFactory" />
-
 
         <additionalTextAttributes
             scheme="Darcula"
