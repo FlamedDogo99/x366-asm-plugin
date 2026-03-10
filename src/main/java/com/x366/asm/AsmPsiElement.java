@@ -11,6 +11,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class AsmPsiElement extends ASTWrapperPsiElement implements PsiNamedElement, NavigatablePsiElement {
+
     public AsmPsiElement(@NotNull ASTNode node) {
         super(node);
     }
@@ -29,17 +30,13 @@ public class AsmPsiElement extends ASTWrapperPsiElement implements PsiNamedEleme
         return this;
     }
 
-    // Required so that resolve() returning this element actually causes the editor
-    // to jump to it. ASTWrapperPsiElement does not implement Navigatable, so without
-    // this override Cmd+click on a label invocation silently does nothing.
     @Override
     public void navigate(boolean requestFocus) {
         VirtualFile vFile = getVirtualFile();
         if(vFile == null) {
             return;
         }
-        new OpenFileDescriptor(getProject(), vFile, getNode().getStartOffset())
-            .navigate(requestFocus);
+        new OpenFileDescriptor(getProject(), vFile, getNode().getStartOffset()).navigate(requestFocus);
     }
 
     @Override

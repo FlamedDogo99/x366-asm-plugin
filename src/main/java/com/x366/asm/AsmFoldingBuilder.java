@@ -21,10 +21,7 @@ public class AsmFoldingBuilder extends FoldingBuilderEx {
 
     @Override
     @NotNull
-    public FoldingDescriptor[] buildFoldRegions(
-        @NotNull PsiElement root,
-        @NotNull Document document,
-        boolean quick) {
+    public FoldingDescriptor[] buildFoldRegions(@NotNull PsiElement root, @NotNull Document document, boolean quick) {
 
         List<FoldingDescriptor> descriptors = new ArrayList<>();
         String text = document.getText();
@@ -45,7 +42,7 @@ public class AsmFoldingBuilder extends FoldingBuilderEx {
                 blockEnd = lineEnd;
                 blockLines = 1;
             } else {
-                // Check that from previous match to this one, it's only whitespace
+                // check that from previous match to this one, it's only whitespace
                 boolean gapBlank = true;
                 for(int g = blockEnd; g < lineStart; g++) {
                     if(!Character.isWhitespace(text.charAt(g))) {
@@ -80,8 +77,7 @@ public class AsmFoldingBuilder extends FoldingBuilderEx {
         for(int i = 0; i < labelPositions.size(); i++) {
             int[] pos = labelPositions.get(i);
             int sectionStart = pos[1]; // end of label
-            int sectionEnd = (i + 1 < labelPositions.size())
-                ? labelPositions.get(i + 1)[0]          // next label start
+            int sectionEnd = (i + 1 < labelPositions.size()) ? labelPositions.get(i + 1)[0]          // next label start
                 : docLen;
 
             // trim whitespace
@@ -93,20 +89,14 @@ public class AsmFoldingBuilder extends FoldingBuilderEx {
             if(sectionEnd > sectionStart + 1 && sectionLineCount > 1) {
                 String labelName = text.substring(pos[0], text.indexOf(':', pos[0]));
                 int foldStart = pos[0];
-                descriptors.add(new FoldingDescriptor(
-                    root.getNode(),
-                    new TextRange(foldStart, sectionEnd),
-                    null,
-                    labelName + ": ..."
-                ));
+                descriptors.add(new FoldingDescriptor(root.getNode(), new TextRange(foldStart, sectionEnd), null, labelName + ": ..."));
             }
         }
 
         return descriptors.toArray(FoldingDescriptor[]::new);
     }
 
-    private void addCommentFold(List<FoldingDescriptor> descriptors, PsiElement root,
-                                String text, int start, int end, int docLen) {
+    private void addCommentFold(List<FoldingDescriptor> descriptors, PsiElement root, String text, int start, int end, int docLen) {
         if(end > docLen) {
             end = docLen;
         }
@@ -116,12 +106,7 @@ public class AsmFoldingBuilder extends FoldingBuilderEx {
         // first line as placeholder text
         int firstNewline = text.indexOf('\n', start);
         String firstLine = text.substring(start, firstNewline > 0 ? firstNewline : end).strip();
-        descriptors.add(new FoldingDescriptor(
-            root.getNode(),
-            new TextRange(start, end),
-            null,
-            firstLine + " ..."
-        ));
+        descriptors.add(new FoldingDescriptor(root.getNode(), new TextRange(start, end), null, firstLine + " ..."));
     }
 
     @Nullable

@@ -31,9 +31,11 @@ public class AsmParserDefinition implements ParserDefinition {
     public @NotNull PsiParser createParser(Project project) {
         return (root, builder) -> {
             PsiBuilder.Marker rootMarker = builder.mark();
-            while (!builder.eof()) {
+            while(!builder.eof()) {
                 IElementType tokenType = builder.getTokenType();
-                if (tokenType == null) break;
+                if(tokenType == null) {
+                    break;
+                }
                 PsiBuilder.Marker tokenMarker = builder.mark();
                 builder.advanceLexer();
                 tokenMarker.done(tokenType);

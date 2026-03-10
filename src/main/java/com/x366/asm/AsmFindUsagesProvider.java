@@ -12,19 +12,11 @@ public class AsmFindUsagesProvider implements FindUsagesProvider {
 
     @Override
     public @Nullable WordsScanner getWordsScanner() {
-        return new DefaultWordsScanner(
-            new AsmLexer(),
-            TokenSet.create(AsmTokenTypes.LABEL, AsmTokenTypes.IDENTIFIER),
-            TokenSet.create(AsmTokenTypes.COMMENT),
-            TokenSet.create(AsmTokenTypes.STRING)
-        );
+        return new DefaultWordsScanner(new AsmLexer(), TokenSet.create(AsmTokenTypes.LABEL, AsmTokenTypes.IDENTIFIER), TokenSet.create(AsmTokenTypes.COMMENT), TokenSet.create(AsmTokenTypes.STRING));
     }
 
     @Override
     public boolean canFindUsagesFor(@NotNull PsiElement element) {
-        // IntelliJ passes the LEAF node at the cursor position, which is a plain
-        // LeafPsiElement -- NOT an AsmPsiElement. So we cannot use instanceof here.
-        // Check the element type directly instead.
         return element.getNode().getElementType() == AsmTokenTypes.LABEL;
     }
 
@@ -35,11 +27,7 @@ public class AsmFindUsagesProvider implements FindUsagesProvider {
 
     @Override
     public @NotNull String getDescriptiveName(@NotNull PsiElement element) {
-        if(element instanceof AsmPsiElement psi) {
-            String name = psi.getName();
-            return name != null ? name : element.getText();
-        }
-        // Leaf node case: strip colon from label text directly
+        // we get a LeafPsiElement here
         String text = element.getText();
         return text.endsWith(":") ? text.substring(0, text.length() - 1) : text;
     }

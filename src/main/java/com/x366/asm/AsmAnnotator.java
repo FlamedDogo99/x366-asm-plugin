@@ -19,28 +19,16 @@ import java.util.regex.Pattern;
 public class AsmAnnotator implements Annotator {
 
     private static final Pattern LABEL_DEF_PATTERN = Pattern.compile("^[ \\t]*([a-zA-Z_]\\w*):", Pattern.MULTILINE);
-    private static final Pattern IDENTIFIER_PATTERN = Pattern.compile("[a-zA-Z_]\\w*");
 
     private record CacheEntry(long stamp, Set<String> labels) {
     }
 
-    // ConcurrentHashMap to avoid data races -- annotators are called from multiple threads
     private static final Map<String, CacheEntry> cache = new ConcurrentHashMap<>();
 
     @Override
     public void annotate(@NotNull PsiElement element, @NotNull AnnotationHolder holder) {
-        // only check plain identifiers
+        // lexer only will make identifier here
         if(element.getNode().getElementType() != AsmTokenTypes.IDENTIFIER) {
-            return;
-        }
-        String text = element.getText();
-
-        if(!IDENTIFIER_PATTERN.matcher(text).matches()) {
-            return;
-        }
-
-        String upper = text.toUpperCase();
-        if(AsmLexer.KEYWORD_SET.contains(upper) || AsmLexer.SYSCALL_SET.contains(upper) || AsmLexer.REGISTER_SET.contains(upper)) {
             return;
         }
 
@@ -59,8 +47,8 @@ public class AsmAnnotator implements Annotator {
             return;
         }
 
-        if(!getLabels(vFile.getPath(), doc).contains(text)) {
-            holder.newAnnotation(HighlightSeverity.WARNING, "Unresolved label '" + text + "'").range(element).create();
+        if(!getLabels(vFile.getPath(), doc).contains(element.getText())) {
+            holder.newAnnotation(HighlightSeverity.WARNING, "Unresolved label '" + element.getText() + "'").range(element).create();
         }
     }
 

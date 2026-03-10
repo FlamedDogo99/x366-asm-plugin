@@ -9,26 +9,11 @@ import java.util.Set;
 
 public class AsmLexer extends LexerBase {
 
-    public static final Set<String> KEYWORD_SET = Set.of(
-        "MOV", "MOVB", "ADD", "SUB", "MUL", "DIV", "INC", "DEC",
-        "AND", "OR", "XOR", "NOT", "SHL", "SHR", "CMP", "TEST",
-        "JMP", "JE", "JNE", "JZ", "JNZ", "JG", "JGE", "JL", "JLE",
-        "JA", "JAE", "JB", "JBE", "PUSH", "POP", "CALL", "RET",
-        "SYSCALL", "NOP", "HLT", "HALT", "DB", "DW", "DUP"
-    );
+    public static final Set<String> KEYWORD_SET = Set.of("MOV", "MOVB", "ADD", "SUB", "MUL", "DIV", "INC", "DEC", "AND", "OR", "XOR", "NOT", "SHL", "SHR", "CMP", "TEST", "JMP", "JE", "JNE", "JZ", "JNZ", "JG", "JGE", "JL", "JLE", "JA", "JAE", "JB", "JBE", "PUSH", "POP", "CALL", "RET", "SYSCALL", "NOP", "HLT", "HALT", "DB", "DW", "DUP");
 
-    public static final Set<String> SYSCALL_SET = Set.of(
-        "EXIT", "PRINT_CHAR", "PRINT_INT", "PRINT_STRING",
-        "READ_CHAR", "READ_INT", "READ_STRING", "CLEAR_SCREEN",
-        "DRAW_PIXEL", "DRAW_RECT", "DRAW_LINE", "READ_PIXEL",
-        "FLUSH_SCREEN", "SBRK", "MALLOC", "FREE",
-        "ATOI", "SLEEP", "OPEN_FILE", "READ_FILE", "WRITE_FILE", "CLOSE_FILE"
-    );
+    public static final Set<String> SYSCALL_SET = Set.of("EXIT", "PRINT_CHAR", "PRINT_INT", "PRINT_STRING", "READ_CHAR", "READ_INT", "READ_STRING", "CLEAR_SCREEN", "DRAW_PIXEL", "DRAW_RECT", "DRAW_LINE", "READ_PIXEL", "FLUSH_SCREEN", "SBRK", "MALLOC", "FREE", "ATOI", "SLEEP", "OPEN_FILE", "READ_FILE", "WRITE_FILE", "CLOSE_FILE");
 
-    public static final Set<String> REGISTER_SET = Set.of(
-        "AX", "BX", "CX", "DX", "EX", "FX", "SP", "FP",
-        "AL", "BL", "CL", "DL", "EL", "FL"
-    );
+    public static final Set<String> REGISTER_SET = Set.of("AX", "BX", "CX", "DX", "EX", "FX", "SP", "FP", "AL", "BL", "CL", "DL", "EL", "FL");
 
     private CharSequence buffer;
     private int start, end, bufferEnd;
@@ -83,7 +68,7 @@ public class AsmLexer extends LexerBase {
 
         char c = buffer.charAt(start);
 
-        // Whitespace
+        // whitespace
         if(Character.isWhitespace(c)) {
             end = start + 1;
             while(end < bufferEnd && Character.isWhitespace(buffer.charAt(end))) {
@@ -93,7 +78,7 @@ public class AsmLexer extends LexerBase {
             return;
         }
 
-        // Comment  ;...
+        // comment  ;...
         if(c == ';') {
             end = start;
             while(end < bufferEnd && buffer.charAt(end) != '\n') {
@@ -103,7 +88,7 @@ public class AsmLexer extends LexerBase {
             return;
         }
 
-        // String  "..." and '...'
+        // string  "..." and '...'
         if(c == '"' || c == '\'') {
             end = start + 1;
             while(end < bufferEnd) {
@@ -120,7 +105,7 @@ public class AsmLexer extends LexerBase {
             return;
         }
 
-        // Numbers: 0x hex, 0b binary, decimal
+        // numbers: 0x hex, 0b binary, decimal
         if(c == '0' && start + 1 < bufferEnd) {
             char next = buffer.charAt(start + 1);
             if(next == 'x' || next == 'X') {
@@ -152,7 +137,7 @@ public class AsmLexer extends LexerBase {
             tokenType = AsmTokenTypes.NUMBER;
             return;
         }
-        // Directives, for example .MEMORY
+        // directives, for example .MEMORY
         if(c == '.') {
             end = start + 1;
             while(end < bufferEnd && (Character.isLetterOrDigit(buffer.charAt(end)) || buffer.charAt(end) == '_')) {
@@ -162,7 +147,7 @@ public class AsmLexer extends LexerBase {
             return;
         }
 
-        // Identifiers, keywords, registers, syscalls, labels
+        // identifiers, keywords, registers, syscalls, labels
         if(Character.isLetter(c) || c == '_') {
             end = start;
             while(end < bufferEnd && (Character.isLetterOrDigit(buffer.charAt(end)) || buffer.charAt(end) == '_')) {
@@ -170,7 +155,7 @@ public class AsmLexer extends LexerBase {
             }
             String word = buffer.subSequence(start, end).toString();
 
-            // Label: identifier immediately followed by ':'
+            // labels: identifier immediately followed by ':'
             if(end < bufferEnd && buffer.charAt(end) == ':') {
                 end++; // consume the colon
                 tokenType = AsmTokenTypes.LABEL;
@@ -194,26 +179,26 @@ public class AsmLexer extends LexerBase {
             return;
         }
 
-        // Operators
+        // operators
         if(c == '+' || c == '-' || c == '*' || c == '/') {
             end = start + 1;
             tokenType = AsmTokenTypes.OPERATOR;
             return;
         }
 
-        // Delimiters
+        // delimiters
         if(c == ',' || c == '[' || c == ']' || c == '(' || c == ')') {
             end = start + 1;
             tokenType = AsmTokenTypes.DELIMITER;
             return;
         }
 
-        // Fallback
+        // fallback
         end = start + 1;
         tokenType = AsmTokenTypes.BAD_CHARACTER;
     }
 
-    private boolean isHexDigit(char ch) {
+    private static boolean isHexDigit(char ch) {
         return (ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'f') || (ch >= 'A' && ch <= 'F');
     }
 }

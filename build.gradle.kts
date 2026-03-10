@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "com.x366"
-version = "1.1.14"
+version = "1.1.3"
 
 java {
     sourceCompatibility = JavaVersion.VERSION_17

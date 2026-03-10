@@ -9,11 +9,11 @@
     <extensions defaultExtensionNs="com.intellij">
 
         <fileType
-            name="x366 ASM"
-            implementationClass="com.x366.asm.AsmFileType"
-            fieldName="INSTANCE"
-            language="x366ASM"
-            extensions="asm" />
+                name="x366 ASM"
+                implementationClass="com.x366.asm.AsmFileType"
+                fieldName="INSTANCE"
+                language="x366ASM"
+                extensions="asm" />
         <lang.parserDefinition
                 language="x366ASM"
                 implementationClass="com.x366.asm.AsmParserDefinition" />
@@ -22,18 +22,21 @@
                 language="x366ASM"
                 implementationClass="com.x366.asm.AsmFindUsagesProvider" />
 
+        <findUsagesHandlerFactory
+                implementation="com.x366.asm.AsmFindUsagesHandlerFactory" />
+
+        <gotoDeclarationHandler
+                implementation="com.x366.asm.AsmGotoDeclarationHandler" />
+
         <lang.syntaxHighlighterFactory
-            language="x366ASM"
-            implementationClass="com.x366.asm.AsmSyntaxHighlighterFactory" />
+                language="x366ASM"
+                implementationClass="com.x366.asm.AsmSyntaxHighlighterFactory" />
 
         <additionalTextAttributes
-            scheme="Darcula"
-            file="com/x366/asm/colors-darcula.xml" />
+                scheme="Darcula"
+                file="com/x366/asm/colors-darcula.xml" />
         <colorSettingsPage
-            implementation="com.x366.asm.AsmColorSettingsPage" />
-
-        <psi.referenceContributor
-                implementation="com.x366.asm.AsmReferenceContributor" />
+                implementation="com.x366.asm.AsmColorSettingsPage" />
 
         <completion.contributor
                 language="x366ASM"

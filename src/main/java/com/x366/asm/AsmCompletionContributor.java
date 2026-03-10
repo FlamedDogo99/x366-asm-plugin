@@ -44,13 +44,11 @@ public class AsmCompletionContributor extends CompletionContributor {
                     String firstToken = parts.length > 0 ? parts[0].toUpperCase() : "";
 
                     if(firstToken.equals("SYSCALL")) {
-                        // SYSCALL operand: only syscall names are valid
                         for(String sys : SYSCALLS) {
                             result.addElement(LookupElementBuilder.create(sys)
                                 .withTypeText("syscall").withItemTextItalic(true));
                         }
                     } else {
-                        // general operand: registers and labels
                         for(String reg : REGISTERS) {
                             result.addElement(LookupElementBuilder.create(reg)
                                 .withTypeText("register"));

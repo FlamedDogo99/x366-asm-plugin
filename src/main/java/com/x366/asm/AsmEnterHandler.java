@@ -12,15 +12,11 @@ import org.jetbrains.annotations.NotNull;
 public class AsmEnterHandler implements EnterHandlerDelegate {
 
     @Override
-    public Result preprocessEnter(
-        @NotNull PsiFile file,
-        @NotNull Editor editor,
-        @NotNull Ref<Integer> caretOffset,
-        @NotNull Ref<Integer> caretAdvance,
-        @NotNull DataContext dataContext,
-        EditorActionHandler originalHandler) {
+    public Result preprocessEnter(@NotNull PsiFile file, @NotNull Editor editor, @NotNull Ref<Integer> caretOffset, @NotNull Ref<Integer> caretAdvance, @NotNull DataContext dataContext, EditorActionHandler originalHandler) {
 
-        if (!(file.getFileType() instanceof AsmFileType)) return Result.Continue;
+        if(!(file.getFileType() instanceof AsmFileType)) {
+            return Result.Continue;
+        }
 
         Document doc = editor.getDocument();
         int offset = caretOffset.get();
@@ -30,7 +26,7 @@ public class AsmEnterHandler implements EnterHandlerDelegate {
 
         // check for standalone comment
         String trimmed = lineText.toString().stripLeading();
-        if (trimmed.startsWith(";")) {
+        if(trimmed.startsWith(";")) {
             String leading = lineText.subSequence(0, lineText.length() - trimmed.length()).toString();
             String insertion = "\n" + leading + "; ";
             doc.insertString(offset, insertion);
@@ -42,10 +38,7 @@ public class AsmEnterHandler implements EnterHandlerDelegate {
     }
 
     @Override
-    public Result postProcessEnter(
-        @NotNull PsiFile file,
-        @NotNull Editor editor,
-        @NotNull DataContext dataContext) {
+    public Result postProcessEnter(@NotNull PsiFile file, @NotNull Editor editor, @NotNull DataContext dataContext) {
         return Result.Continue;
     }
 }
