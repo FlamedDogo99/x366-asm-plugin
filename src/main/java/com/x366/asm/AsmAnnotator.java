@@ -9,28 +9,33 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class AsmAnnotator implements Annotator {
 
-    private static final Pattern LABEL_DEF_PATTERN =
-        Pattern.compile("^[ \\t]*([a-zA-Z_]\\w*):", Pattern.MULTILINE);
+    private static final Pattern LABEL_DEF_PATTERN = Pattern.compile("^[ \\t]*([a-zA-Z_]\\w*):", Pattern.MULTILINE);
+    private static final Pattern IDENTIFIER_PATTERN = Pattern.compile("[a-zA-Z_]\\w*");
 
     private record CacheEntry(long stamp, Set<String> labels) {
     }
 
-    private static final Map<String, CacheEntry> cache = new HashMap<>();
+    // ConcurrentHashMap to avoid data races -- annotators are called from multiple threads
+    private static final Map<String, CacheEntry> cache = new ConcurrentHashMap<>();
 
     @Override
     public void annotate(@NotNull PsiElement element, @NotNull AnnotationHolder holder) {
+        // only check plain identifiers
+        if(element.getNode().getElementType() != AsmTokenTypes.IDENTIFIER) {
+            return;
+        }
         String text = element.getText();
 
-        if(!text.matches("[a-zA-Z_]\\w*")) {
+        if(!IDENTIFIER_PATTERN.matcher(text).matches()) {
             return;
         }
 
@@ -55,9 +60,7 @@ public class AsmAnnotator implements Annotator {
         }
 
         if(!getLabels(vFile.getPath(), doc).contains(text)) {
-            holder.newAnnotation(HighlightSeverity.WARNING, "Unresolved label '" + text + "'")
-                .range(element)
-                .create();
+            holder.newAnnotation(HighlightSeverity.WARNING, "Unresolved label '" + text + "'").range(element).create();
         }
     }
 
@@ -69,7 +72,7 @@ public class AsmAnnotator implements Annotator {
         }
 
         Set<String> labels = new HashSet<>();
-        Matcher matcher = LABEL_DEF_PATTERN.matcher(doc.getText());
+        Matcher matcher = LABEL_DEF_PATTERN.matcher(doc.getImmutableCharSequence());
         while(matcher.find()) {
             labels.add(matcher.group(1));
         }

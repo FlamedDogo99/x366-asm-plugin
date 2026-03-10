@@ -14,7 +14,7 @@ public class AsmLexer extends LexerBase {
         "AND", "OR", "XOR", "NOT", "SHL", "SHR", "CMP", "TEST",
         "JMP", "JE", "JNE", "JZ", "JNZ", "JG", "JGE", "JL", "JLE",
         "JA", "JAE", "JB", "JBE", "PUSH", "POP", "CALL", "RET",
-        "SYSCALL", "NOP", "HLT", "DB", "DW", "DUP"
+        "SYSCALL", "NOP", "HLT", "HALT", "DB", "DW", "DUP"
     );
 
     public static final Set<String> SYSCALL_SET = Set.of(
@@ -145,6 +145,10 @@ public class AsmLexer extends LexerBase {
             while(end < bufferEnd && Character.isDigit(buffer.charAt(end))) {
                 end++;
             }
+            // consume numeric suffix (e.g. K, M, G)
+            if(end < bufferEnd && Character.isLetter(buffer.charAt(end))) {
+                end++;
+            }
             tokenType = AsmTokenTypes.NUMBER;
             return;
         }
@@ -154,7 +158,7 @@ public class AsmLexer extends LexerBase {
             while(end < bufferEnd && (Character.isLetterOrDigit(buffer.charAt(end)) || buffer.charAt(end) == '_')) {
                 end++;
             }
-            tokenType = AsmTokenTypes.IDENTIFIER;
+            tokenType = AsmTokenTypes.DIRECTIVE;
             return;
         }
 

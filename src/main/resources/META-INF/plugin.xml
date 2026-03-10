@@ -14,6 +14,13 @@
             fieldName="INSTANCE"
             language="x366ASM"
             extensions="asm" />
+        <lang.parserDefinition
+                language="x366ASM"
+                implementationClass="com.x366.asm.AsmParserDefinition" />
+
+        <lang.findUsagesProvider
+                language="x366ASM"
+                implementationClass="com.x366.asm.AsmFindUsagesProvider" />
 
         <lang.syntaxHighlighterFactory
             language="x366ASM"
@@ -24,8 +31,8 @@
             file="com/x366/asm/colors-darcula.xml" />
         <colorSettingsPage
             implementation="com.x366.asm.AsmColorSettingsPage" />
+
         <psi.referenceContributor
-                language="x366ASM"
                 implementation="com.x366.asm.AsmReferenceContributor" />
 
         <completion.contributor

@@ -45,9 +45,15 @@ public class AsmFoldingBuilder extends FoldingBuilderEx {
                 blockEnd = lineEnd;
                 blockLines = 1;
             } else {
-                // Check from previous match to this one is white space
-                String gap = text.substring(blockEnd, lineStart);
-                if(gap.isBlank()) {
+                // Check that from previous match to this one, it's only whitespace
+                boolean gapBlank = true;
+                for(int g = blockEnd; g < lineStart; g++) {
+                    if(!Character.isWhitespace(text.charAt(g))) {
+                        gapBlank = false;
+                        break;
+                    }
+                }
+                if(gapBlank) {
                     blockEnd = lineEnd;
                     blockLines++;
                 } else {
@@ -72,7 +78,8 @@ public class AsmFoldingBuilder extends FoldingBuilderEx {
         }
 
         for(int i = 0; i < labelPositions.size(); i++) {
-            int sectionStart = labelPositions.get(i)[1]; // end of label
+            int[] pos = labelPositions.get(i);
+            int sectionStart = pos[1]; // end of label
             int sectionEnd = (i + 1 < labelPositions.size())
                 ? labelPositions.get(i + 1)[0]          // next label start
                 : docLen;
@@ -82,10 +89,10 @@ public class AsmFoldingBuilder extends FoldingBuilderEx {
                 sectionEnd--;
             }
 
-            if(sectionEnd > sectionStart + 1) {
-                String labelName = text.substring(labelPositions.get(i)[0],
-                    text.indexOf(':', labelPositions.get(i)[0]));
-                int foldStart = labelPositions.get(i)[0];
+            int sectionLineCount = document.getLineNumber(sectionEnd) - document.getLineNumber(sectionStart);
+            if(sectionEnd > sectionStart + 1 && sectionLineCount > 1) {
+                String labelName = text.substring(pos[0], text.indexOf(':', pos[0]));
+                int foldStart = pos[0];
                 descriptors.add(new FoldingDescriptor(
                     root.getNode(),
                     new TextRange(foldStart, sectionEnd),

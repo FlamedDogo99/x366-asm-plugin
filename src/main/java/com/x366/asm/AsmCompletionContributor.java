@@ -20,54 +20,49 @@ public class AsmCompletionContributor extends CompletionContributor {
     private static final List<String> SYSCALLS = AsmLexer.SYSCALL_SET.stream().sorted().toList();
 
     public AsmCompletionContributor() {
-        extend(CompletionType.BASIC,
-            PlatformPatterns.psiElement().withLanguage(AsmLanguage.INSTANCE),
-            new CompletionProvider<>() {
-                @Override
-                protected void addCompletions(@NotNull CompletionParameters parameters,
-                                              @NotNull ProcessingContext context,
-                                              @NotNull CompletionResultSet result) {
+        extend(CompletionType.BASIC, PlatformPatterns.psiElement().withLanguage(AsmLanguage.INSTANCE), new CompletionProvider<>() {
+            @Override
+            protected void addCompletions(@NotNull CompletionParameters parameters, @NotNull ProcessingContext context, @NotNull CompletionResultSet result) {
 
-                    // keywords and instructions
+                Document doc = parameters.getEditor().getDocument();
+                int offset = parameters.getOffset();
+                int lineStart = doc.getLineStartOffset(doc.getLineNumber(offset));
+                String linePrefix = doc.getText().substring(lineStart, offset).stripLeading();
+
+                String[] parts = linePrefix.split("[\\s,]+");
+                int tokenIndex = parts.length;
+                if(linePrefix.isEmpty() || linePrefix.matches(".*[\\s,]$")) {
+                    tokenIndex++;
+                }
+
+                if(tokenIndex <= 1) {
                     for(String kw : KEYWORDS) {
-                        result.addElement(
-                            LookupElementBuilder.create(kw)
-                                .withTypeText("instruction")
-                                .withBoldness(true)
-                        );
+                        result.addElement(LookupElementBuilder.create(kw)
+                            .withTypeText("instruction").withBoldness(true));
                     }
+                } else {
+                    String firstToken = parts.length > 0 ? parts[0].toUpperCase() : "";
 
-                    // registers
-                    for(String reg : REGISTERS) {
-                        result.addElement(
-                            LookupElementBuilder.create(reg)
-                                .withTypeText("register")
-                        );
-                    }
-
-                    // syscalls
-                    for(String sys : SYSCALLS) {
-                        result.addElement(
-                            LookupElementBuilder.create(sys)
-                                .withTypeText("syscall")
-                                .withItemTextItalic(true)
-                        );
-                    }
-
-                    // labels
-                    Document doc = parameters.getEditor().getDocument();
-                    String text = doc.getText();
-                    Matcher matcher = LABEL_PATTERN.matcher(text);
-                    while(matcher.find()) {
-                        String labelName = matcher.group(1);
-                        result.addElement(
-                            LookupElementBuilder.create(labelName)
-                                .withTypeText("label")
-                                .withTailText(":")
-                        );
+                    if(firstToken.equals("SYSCALL")) {
+                        // SYSCALL operand: only syscall names are valid
+                        for(String sys : SYSCALLS) {
+                            result.addElement(LookupElementBuilder.create(sys)
+                                .withTypeText("syscall").withItemTextItalic(true));
+                        }
+                    } else {
+                        // general operand: registers and labels
+                        for(String reg : REGISTERS) {
+                            result.addElement(LookupElementBuilder.create(reg)
+                                .withTypeText("register"));
+                        }
+                        Matcher matcher = LABEL_PATTERN.matcher(doc.getText());
+                        while(matcher.find()) {
+                            result.addElement(LookupElementBuilder.create(matcher.group(1))
+                                .withTypeText("label").withTailText(":"));
+                        }
                     }
                 }
             }
-        );
+        });
     }
 }

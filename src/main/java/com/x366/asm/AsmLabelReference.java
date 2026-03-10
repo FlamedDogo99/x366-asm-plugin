@@ -1,23 +1,16 @@
 package com.x366.asm;
 
-import com.intellij.openapi.editor.Document;
-import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import com.intellij.lang.ASTNode;
 
 public class AsmLabelReference extends PsiReferenceBase<PsiElement> {
 
-    private final Pattern labelPattern;
-
     public AsmLabelReference(@NotNull PsiElement element, TextRange rangeInElement) {
         super(element, rangeInElement);
-        String labelName = element.getText().substring(rangeInElement.getStartOffset(), rangeInElement.getEndOffset());
-        this.labelPattern = Pattern.compile("^[ \\t]*(" + Pattern.quote(labelName) + "):", Pattern.MULTILINE);
     }
 
     @Nullable
@@ -28,26 +21,50 @@ public class AsmLabelReference extends PsiReferenceBase<PsiElement> {
             return null;
         }
 
-        var vf = file.getVirtualFile();
-        if(vf == null) {
-            return null;
-        }
-        Document doc = FileDocumentManager.getInstance().getDocument(vf);
-        if(doc == null) {
-            return null;
-        }
+        String targetName = myElement.getText();
 
-        // find "labelName:" at the start of a line
-        Matcher matcher = labelPattern.matcher(doc.getText());
-
-        while(matcher.find()) {
-            int labelOffset = matcher.start(1);
-            // stop from matching itself
-            if(labelOffset != myElement.getTextOffset()) {
-                return file.findElementAt(labelOffset);
+        ASTNode node = file.getNode().getFirstChildNode();
+        while(node != null) {
+            if(node.getElementType() == AsmTokenTypes.LABEL) {
+                String labelText = node.getText();
+                String labelName = labelText.endsWith(":") ? labelText.substring(0, labelText.length() - 1) : labelText;
+                if(labelName.equals(targetName)) {
+                    return node.getPsi();
+                }
             }
+            node = node.getTreeNext();
         }
         return null;
+    }
+
+    // Override isReferenceTo() to compare by file + text offset rather than PSI instance
+    // identity. The default implementation uses areElementsEquivalent(resolve(), element)
+    // which relies on instance equality -- node.getPsi() is cached per ASTNode but the
+    // element passed in by Find Usages may be a different wrapper instance for the same
+    // node, causing matches to be missed.
+    @Override
+    public boolean isReferenceTo(@NotNull PsiElement element) {
+        // IntelliJ passes the LEAF node at the cursor, which is a plain LeafPsiElement
+        // not an AsmPsiElement -- so we cannot use instanceof here.
+        if(element.getNode().getElementType() != AsmTokenTypes.LABEL) {
+            return false;
+        }
+
+        // Compare by name: does this reference point to a label with the same name?
+        String refText = myElement.getText();
+        String labelText = element.getText();
+        String labelName = labelText.endsWith(":") ? labelText.substring(0, labelText.length() - 1) : labelText;
+        if(!refText.equals(labelName)) {
+            return false;
+        }
+
+        // Confirm they are in the same file
+        PsiFile refFile = myElement.getContainingFile();
+        PsiFile labelFile = element.getContainingFile();
+        if(refFile == null || labelFile == null) {
+            return false;
+        }
+        return refFile.equals(labelFile);
     }
 
     @Override

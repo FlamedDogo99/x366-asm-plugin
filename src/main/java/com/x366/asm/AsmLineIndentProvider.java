@@ -24,7 +24,7 @@ public class AsmLineIndentProvider implements LineIndentProvider {
         while(prevLine >= 0) {
             int start = doc.getLineStartOffset(prevLine);
             int end = doc.getLineEndOffset(prevLine);
-            String text = doc.getText().substring(start, end).stripTrailing();
+            String text = doc.getImmutableCharSequence().subSequence(start, end).toString().stripTrailing();
             if(!text.isBlank()) {
                 String trimmed = text.stripLeading();
 
