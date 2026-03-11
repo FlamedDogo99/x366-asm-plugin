@@ -45,20 +45,19 @@ public class AsmPsiElement extends ASTWrapperPsiElement implements PsiNamedEleme
             return this;
         }
 
-        // Walk the flat token list and replace only LABEL and IDENTIFIER tokens
-        // that match the old name — avoids replacing text inside strings or comments.
+        //  replace only label and identifiers that match old name
         StringBuilder sb = new StringBuilder(doc.getText());
-        int offset = 0; // cumulative shift as replacements change string length
+        int offset = 0;
         ASTNode node = getContainingFile().getNode().getFirstChildNode();
         while(node != null) {
             IElementType type = node.getElementType();
             if(type == AsmTokenTypes.LABEL || type == AsmTokenTypes.IDENTIFIER) {
                 String tokenText = node.getText();
-                // LABEL tokens include the trailing colon — strip it for comparison
+                // strip colon from label
                 String tokenName = (type == AsmTokenTypes.LABEL && tokenText.endsWith(":")) ? tokenText.substring(0, tokenText.length() - 1) : tokenText;
                 if(tokenName.equals(oldName)) {
                     int start = node.getStartOffset() + offset;
-                    int end = start + tokenName.length(); // leave the colon untouched
+                    int end = start + tokenName.length();
                     sb.replace(start, end, newName);
                     offset += newName.length() - tokenName.length();
                 }
