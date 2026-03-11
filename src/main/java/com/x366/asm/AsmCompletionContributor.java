@@ -20,7 +20,7 @@ public class AsmCompletionContributor extends CompletionContributor {
     private static final List<String> SYSCALLS = AsmLexer.SYSCALL_SET.stream().sorted().toList();
 
     public AsmCompletionContributor() {
-        extend(CompletionType.BASIC, PlatformPatterns.psiElement().withLanguage(AsmLanguage.INSTANCE), new CompletionProvider<>() {
+        extend(CompletionType.BASIC, PlatformPatterns.psiElement().withLanguage(AsmLanguage.INSTANCE).andNot(PlatformPatterns.psiElement().withElementType(AsmTokenTypes.COMMENT)), new CompletionProvider<>() {
             @Override
             protected void addCompletions(@NotNull CompletionParameters parameters, @NotNull ProcessingContext context, @NotNull CompletionResultSet result) {
 
@@ -37,26 +37,22 @@ public class AsmCompletionContributor extends CompletionContributor {
 
                 if(tokenIndex <= 1) {
                     for(String kw : KEYWORDS) {
-                        result.addElement(LookupElementBuilder.create(kw)
-                            .withTypeText("instruction").withBoldness(true));
+                        result.addElement(LookupElementBuilder.create(kw).withTypeText("instruction").withBoldness(true));
                     }
                 } else {
                     String firstToken = parts.length > 0 ? parts[0].toUpperCase() : "";
 
                     if(firstToken.equals("SYSCALL")) {
                         for(String sys : SYSCALLS) {
-                            result.addElement(LookupElementBuilder.create(sys)
-                                .withTypeText("syscall").withItemTextItalic(true));
+                            result.addElement(LookupElementBuilder.create(sys).withTypeText("syscall").withItemTextItalic(true));
                         }
                     } else {
                         for(String reg : REGISTERS) {
-                            result.addElement(LookupElementBuilder.create(reg)
-                                .withTypeText("register"));
+                            result.addElement(LookupElementBuilder.create(reg).withTypeText("register"));
                         }
                         Matcher matcher = LABEL_PATTERN.matcher(doc.getText());
                         while(matcher.find()) {
-                            result.addElement(LookupElementBuilder.create(matcher.group(1))
-                                .withTypeText("label").withTailText(":"));
+                            result.addElement(LookupElementBuilder.create(matcher.group(1)).withTypeText("label").withTailText(":"));
                         }
                     }
                 }

@@ -6,107 +6,86 @@ import com.intellij.lang.folding.FoldingDescriptor;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.tree.IElementType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class AsmFoldingBuilder extends FoldingBuilderEx {
-
-    private static final Pattern COMMENT_LINE = Pattern.compile("^[ \\t]*;.*$", Pattern.MULTILINE);
-    private static final Pattern LABEL_LINE = Pattern.compile("^([a-zA-Z_]\\w*):", Pattern.MULTILINE);
 
     @Override
     @NotNull
     public FoldingDescriptor[] buildFoldRegions(@NotNull PsiElement root, @NotNull Document document, boolean quick) {
-
         List<FoldingDescriptor> descriptors = new ArrayList<>();
-        String text = document.getText();
-        int docLen = text.length();
+        List<ASTNode> commentRun = new ArrayList<>();
 
-        // fold comment only lines
-        Matcher cm = COMMENT_LINE.matcher(text);
-        int blockStart = -1;
-        int blockEnd = -1;
-        int blockLines = 0;
+        ASTNode node = root.getNode().getFirstChildNode();
+        while(node != null) {
+            IElementType type = node.getElementType();
 
-        while(cm.find()) {
-            int lineStart = cm.start();
-            int lineEnd = cm.end();
+            if(type == AsmTokenTypes.COMMENT) {
+                commentRun.add(node);
+            } else if(type != AsmTokenTypes.WHITE_SPACE) {
+                flushCommentRun(commentRun, root, descriptors);
+                commentRun.clear();
 
-            if(blockStart == -1) {
-                blockStart = lineStart;
-                blockEnd = lineEnd;
-                blockLines = 1;
-            } else {
-                // check that from previous match to this one, it's only whitespace
-                boolean gapBlank = true;
-                for(int g = blockEnd; g < lineStart; g++) {
-                    if(!Character.isWhitespace(text.charAt(g))) {
-                        gapBlank = false;
-                        break;
-                    }
-                }
-                if(gapBlank) {
-                    blockEnd = lineEnd;
-                    blockLines++;
-                } else {
-                    if(blockLines >= 3) {
-                        addCommentFold(descriptors, root, text, blockStart, blockEnd, docLen);
-                    }
-                    blockStart = lineStart;
-                    blockEnd = lineEnd;
-                    blockLines = 1;
+                if(type == AsmTokenTypes.LABEL) {
+                    foldLabelSection(node, root, document, descriptors);
                 }
             }
-        }
-        if(blockLines >= 3) {
-            addCommentFold(descriptors, root, text, blockStart, blockEnd, docLen);
-        }
 
-        // fold label sections
-        Matcher lm = LABEL_LINE.matcher(text);
-        List<int[]> labelPositions = new ArrayList<>();
-        while(lm.find()) {
-            labelPositions.add(new int[]{lm.start(), lm.end()});
+            node = node.getTreeNext();
         }
-
-        for(int i = 0; i < labelPositions.size(); i++) {
-            int[] pos = labelPositions.get(i);
-            int sectionStart = pos[1]; // end of label
-            int sectionEnd = (i + 1 < labelPositions.size()) ? labelPositions.get(i + 1)[0]          // next label start
-                : docLen;
-
-            // trim whitespace
-            while(sectionEnd > sectionStart && Character.isWhitespace(text.charAt(sectionEnd - 1))) {
-                sectionEnd--;
-            }
-
-            int sectionLineCount = document.getLineNumber(sectionEnd) - document.getLineNumber(sectionStart);
-            if(sectionEnd > sectionStart + 1 && sectionLineCount > 1) {
-                String labelName = text.substring(pos[0], text.indexOf(':', pos[0]));
-                int foldStart = pos[0];
-                descriptors.add(new FoldingDescriptor(root.getNode(), new TextRange(foldStart, sectionEnd), null, labelName + ": ..."));
-            }
-        }
+        flushCommentRun(commentRun, root, descriptors);
 
         return descriptors.toArray(FoldingDescriptor[]::new);
     }
 
-    private void addCommentFold(List<FoldingDescriptor> descriptors, PsiElement root, String text, int start, int end, int docLen) {
-        if(end > docLen) {
-            end = docLen;
-        }
-        if(end <= start) {
+    private void flushCommentRun(List<ASTNode> run, PsiElement root, List<FoldingDescriptor> descriptors) {
+        if(run.size() < 3) {
             return;
         }
-        // first line as placeholder text
-        int firstNewline = text.indexOf('\n', start);
-        String firstLine = text.substring(start, firstNewline > 0 ? firstNewline : end).strip();
-        descriptors.add(new FoldingDescriptor(root.getNode(), new TextRange(start, end), null, firstLine + " ..."));
+        ASTNode first = run.get(0);
+        ASTNode last = run.get(run.size() - 1);
+        TextRange range = new TextRange(first.getStartOffset(), last.getStartOffset() + last.getTextLength());
+        String placeholder = first.getText().strip() + " ...";
+        descriptors.add(new FoldingDescriptor(root.getNode(), range, null, placeholder));
+    }
+
+    private void foldLabelSection(ASTNode labelNode, PsiElement root, Document document, List<FoldingDescriptor> descriptors) {
+        String labelText = labelNode.getText();
+        String labelName = labelText.endsWith(":") ? labelText.substring(0, labelText.length() - 1) : labelText;
+
+        int sectionStart = labelNode.getStartOffset() + labelNode.getTextLength();
+
+        // find last non-whitespace chunk before the next label or end
+        ASTNode cursor = labelNode.getTreeNext();
+        ASTNode lastContent = null;
+        while(cursor != null) {
+            if(cursor.getElementType() == AsmTokenTypes.LABEL) {
+                break;
+            }
+            if(cursor.getElementType() != AsmTokenTypes.WHITE_SPACE) {
+                lastContent = cursor;
+            }
+            cursor = cursor.getTreeNext();
+        }
+
+        if(lastContent == null) {
+            return;
+        }
+
+        int sectionEnd = lastContent.getStartOffset() + lastContent.getTextLength();
+        if(sectionEnd <= sectionStart) {
+            return;
+        }
+        if(document.getLineNumber(sectionEnd) - document.getLineNumber(sectionStart) < 1) {
+            return;
+        }
+
+        descriptors.add(new FoldingDescriptor(root.getNode(), new TextRange(labelNode.getStartOffset(), sectionEnd), null, labelName + ": ..."));
     }
 
     @Nullable
