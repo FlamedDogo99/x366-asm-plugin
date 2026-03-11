@@ -58,8 +58,6 @@
                 language="x366ASM"
                 implementationClass="com.x366.asm.AsmFoldingBuilder" />
 
-        <enterHandlerDelegate
-                implementation="com.x366.asm.AsmEnterHandler" />
         <lineIndentProvider
                 implementation="com.x366.asm.AsmLineIndentProvider" />
 
