@@ -23,19 +23,20 @@ public class AsmFoldingBuilder extends FoldingBuilderEx {
 
         ASTNode node = root.getNode().getFirstChildNode();
         while(node != null) {
-            IElementType type = node.getElementType();
+            if(node.getElementType() == AsmTokenTypes.STATEMENT) {
+                ASTNode firstToken = node.getFirstChildNode();
 
-            if(type == AsmTokenTypes.COMMENT) {
-                commentRun.add(node);
-            } else if(type != AsmTokenTypes.SPACE && type != AsmTokenTypes.NEWLINE) {
-                flushCommentRun(commentRun, root, descriptors);
-                commentRun.clear();
+                if(firstToken != null && firstToken.getElementType() == AsmTokenTypes.COMMENT) {
+                    commentRun.add(firstToken);
+                } else {
+                    flushCommentRun(commentRun, root, descriptors);
+                    commentRun.clear();
 
-                if(type == AsmTokenTypes.LABEL) {
-                    foldLabelSection(node, root, document, descriptors);
+                    if(firstToken != null && firstToken.getElementType() == AsmTokenTypes.LABEL) {
+                        foldLabelSection(node, root, document, descriptors);
+                    }
                 }
             }
-
             node = node.getTreeNext();
         }
         flushCommentRun(commentRun, root, descriptors);
@@ -54,20 +55,25 @@ public class AsmFoldingBuilder extends FoldingBuilderEx {
         descriptors.add(new FoldingDescriptor(root.getNode(), range, null, placeholder));
     }
 
-    private void foldLabelSection(ASTNode labelNode, PsiElement root, Document document, List<FoldingDescriptor> descriptors) {
-        String labelText = labelNode.getText();
+    private void foldLabelSection(ASTNode labelStmt, PsiElement root, Document document, List<FoldingDescriptor> descriptors) {
+        ASTNode labelToken = labelStmt.getFirstChildNode();
+        if(labelToken == null) {
+            return;
+        }
+
+        String labelText = labelToken.getText();
         String labelName = labelText.endsWith(":") ? labelText.substring(0, labelText.length() - 1) : labelText;
 
-        int sectionStart = labelNode.getStartOffset() + labelNode.getTextLength();
+        int sectionStart = labelStmt.getStartOffset() + labelStmt.getTextLength();
 
-        // find last non-whitespace chunk before the next label or end
-        ASTNode cursor = labelNode.getTreeNext();
+        ASTNode cursor = labelStmt.getTreeNext();
         ASTNode lastContent = null;
         while(cursor != null) {
-            if(cursor.getElementType() == AsmTokenTypes.LABEL) {
-                break;
-            }
-            if(cursor.getElementType() != AsmTokenTypes.SPACE && cursor.getElementType() != AsmTokenTypes.NEWLINE) {
+            if(cursor.getElementType() == AsmTokenTypes.STATEMENT) {
+                ASTNode first = cursor.getFirstChildNode();
+                if(first != null && first.getElementType() == AsmTokenTypes.LABEL) {
+                    break;
+                }
                 lastContent = cursor;
             }
             cursor = cursor.getTreeNext();
@@ -85,7 +91,7 @@ public class AsmFoldingBuilder extends FoldingBuilderEx {
             return;
         }
 
-        descriptors.add(new FoldingDescriptor(root.getNode(), new TextRange(labelNode.getStartOffset(), sectionEnd), null, labelName + ": ..."));
+        descriptors.add(new FoldingDescriptor(root.getNode(), new TextRange(labelStmt.getStartOffset(), sectionEnd), null, labelName + ": ..."));
     }
 
     @Nullable

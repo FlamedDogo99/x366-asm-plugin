@@ -1,7 +1,6 @@
 package com.x366.asm;
 
 import com.intellij.psi.tree.IElementType;
-import com.intellij.psi.TokenType;
 
 public interface AsmTokenTypes {
     IElementType COMMENT = new AsmElementType("COMMENT");
@@ -18,6 +17,7 @@ public interface AsmTokenTypes {
     IElementType OPERATOR = new AsmElementType("OPERATOR");
     IElementType DELIMITER = new AsmElementType("DELIMITER");
     IElementType BAD_CHARACTER = new AsmElementType("BAD_CHARACTER");
+    IElementType STATEMENT = new AsmElementType("STATEMENT");
     IElementType SPACE = new AsmElementType("SPACE");
     IElementType NEWLINE = new AsmElementType("NEWLINE");
 }

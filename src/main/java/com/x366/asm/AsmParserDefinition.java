@@ -31,15 +31,42 @@ public class AsmParserDefinition implements ParserDefinition {
     public @NotNull PsiParser createParser(Project project) {
         return (root, builder) -> {
             PsiBuilder.Marker rootMarker = builder.mark();
+
             while(!builder.eof()) {
-                IElementType tokenType = builder.getTokenType();
-                if(tokenType == null) {
+                IElementType type = builder.getTokenType();
+                if(type == null) {
                     break;
                 }
-                PsiBuilder.Marker tokenMarker = builder.mark();
-                builder.advanceLexer();
-                tokenMarker.done(tokenType);
+
+                if(type == AsmTokenTypes.NEWLINE) {
+                    PsiBuilder.Marker m = builder.mark();
+                    builder.advanceLexer();
+                    m.done(AsmTokenTypes.NEWLINE);
+                    continue;
+                }
+
+                if(type == AsmTokenTypes.SPACE) {
+                    builder.advanceLexer();
+                    continue;
+                }
+
+                PsiBuilder.Marker stmtMarker = builder.mark();
+                while(!builder.eof()) {
+                    IElementType t = builder.getTokenType();
+                    if(t == null || t == AsmTokenTypes.NEWLINE) {
+                        break;
+                    }
+                    if(t == AsmTokenTypes.SPACE) {
+                        builder.advanceLexer();
+                        continue;
+                    }
+                    PsiBuilder.Marker tokenMarker = builder.mark();
+                    builder.advanceLexer();
+                    tokenMarker.done(t);
+                }
+                stmtMarker.done(AsmTokenTypes.STATEMENT);
             }
+
             rootMarker.done(root);
             return builder.getTreeBuilt();
         };
@@ -52,7 +79,8 @@ public class AsmParserDefinition implements ParserDefinition {
 
     @Override
     public @NotNull TokenSet getWhitespaceTokens() {
-        return TokenSet.create(AsmTokenTypes.SPACE, AsmTokenTypes.NEWLINE);
+        // space and newline handled by the parser. This stops PsiBuilder from silently skipping
+        return TokenSet.EMPTY;
     }
 
     @Override
