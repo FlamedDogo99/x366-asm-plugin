@@ -3,20 +3,18 @@ package com.x366.asm;
 import com.intellij.codeInsight.completion.*;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.openapi.editor.Document;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.util.ProcessingContext;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class AsmCompletionContributor extends CompletionContributor {
 
-    private static final Pattern LABEL_PATTERN = Pattern.compile("^\\s*([a-zA-Z_]\\w*):", Pattern.MULTILINE);
-
     private static final List<String> KEYWORDS = AsmLexer.KEYWORD_SET.stream().sorted().toList();
     private static final List<String> REGISTERS = AsmLexer.REGISTER_SET.stream().sorted().toList();
+    private static final List<String> WORD_REGISTERS = AsmLexer.REGISTER_SET.stream().filter(r -> !r.endsWith("L")).sorted().toList();
     private static final List<String> SYSCALLS = AsmLexer.SYSCALL_SET.stream().sorted().toList();
 
     public AsmCompletionContributor() {
@@ -29,6 +27,10 @@ public class AsmCompletionContributor extends CompletionContributor {
                 int lineStart = doc.getLineStartOffset(doc.getLineNumber(offset));
                 String linePrefix = doc.getText().substring(lineStart, offset).stripLeading();
 
+                if(linePrefix.indexOf(';') != -1) {
+                    return;
+                }
+
                 String[] parts = linePrefix.split("[\\s,]+");
                 int tokenIndex = parts.length;
                 if(linePrefix.isEmpty() || linePrefix.matches(".*[\\s,]$")) {
@@ -39,20 +41,48 @@ public class AsmCompletionContributor extends CompletionContributor {
                     for(String kw : KEYWORDS) {
                         result.addElement(LookupElementBuilder.create(kw).withTypeText("instruction").withBoldness(true));
                     }
-                } else {
-                    String firstToken = parts.length > 0 ? parts[0].toUpperCase() : "";
+                    return;
+                }
 
-                    if(firstToken.equals("SYSCALL")) {
-                        for(String sys : SYSCALLS) {
-                            result.addElement(LookupElementBuilder.create(sys).withTypeText("syscall").withItemTextItalic(true));
+                String instruction = parts[0].toUpperCase();
+                if(AsmInstructionTable.FREE_FORM.contains(instruction)) {
+                    return;
+                }
+
+                List<AsmInstructionTable.OperandKind> slots = AsmInstructionTable.OPERAND_SLOTS.get(instruction);
+                if(slots == null) {
+                    return;
+                }
+
+                int slotIndex = tokenIndex - 2;
+                if(slotIndex >= slots.size()) {
+                    return;
+                }
+
+                AsmInstructionTable.OperandKind kind = slots.get(slotIndex);
+                VirtualFile vFile = parameters.getOriginalFile().getVirtualFile();
+
+                switch(kind) {
+                    case WORD_REG -> {
+                        for(String reg : WORD_REGISTERS) {
+                            result.addElement(LookupElementBuilder.create(reg).withTypeText("register"));
                         }
-                    } else {
+                    }
+                    case REG_OR_IMM -> {
                         for(String reg : REGISTERS) {
                             result.addElement(LookupElementBuilder.create(reg).withTypeText("register"));
                         }
-                        Matcher matcher = LABEL_PATTERN.matcher(doc.getText());
-                        while(matcher.find()) {
-                            result.addElement(LookupElementBuilder.create(matcher.group(1)).withTypeText("label").withTailText(":"));
+                    }
+                    case LABEL -> {
+                        if(vFile != null) {
+                            for(String label : AsmLabelCache.getLabels(vFile.getPath(), doc)) {
+                                result.addElement(LookupElementBuilder.create(label).withTypeText("label").withTailText(":"));
+                            }
+                        }
+                    }
+                    case SYSCALL_NAME -> {
+                        for(String sys : SYSCALLS) {
+                            result.addElement(LookupElementBuilder.create(sys).withTypeText("syscall").withItemTextItalic(true));
                         }
                     }
                 }

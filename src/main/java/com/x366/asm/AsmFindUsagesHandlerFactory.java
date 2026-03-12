@@ -9,14 +9,29 @@ public class AsmFindUsagesHandlerFactory extends FindUsagesHandlerFactory {
 
     @Override
     public boolean canFindUsages(@NotNull PsiElement element) {
-        return element.getLanguage().isKindOf(AsmLanguage.INSTANCE)
-            && element.getNode().getElementType() == AsmTokenTypes.LABEL;
+        if(!element.getLanguage().isKindOf(AsmLanguage.INSTANCE)) {
+            return false;
+        }
+        var node = element.getNode();
+        var type = node.getElementType();
+        if(type == AsmTokenTypes.LABEL) {
+            return true;
+        }
+        if(type == AsmTokenTypes.STATEMENT) {
+            var first = node.getFirstChildNode();
+            return first != null && first.getElementType() == AsmTokenTypes.LABEL;
+        }
+        return false;
     }
 
     @Override
-    public FindUsagesHandler createFindUsagesHandler(
-        @NotNull PsiElement element,
-        boolean forHighlightUsages) {
+    public FindUsagesHandler createFindUsagesHandler(@NotNull PsiElement element, boolean forHighlightUsages) {
+        if(element.getNode().getElementType() == AsmTokenTypes.STATEMENT) {
+            var first = element.getNode().getFirstChildNode();
+            if(first != null && first.getElementType() == AsmTokenTypes.LABEL) {
+                return new AsmFindUsagesHandler(first.getPsi());
+            }
+        }
         return new AsmFindUsagesHandler(element);
     }
 }

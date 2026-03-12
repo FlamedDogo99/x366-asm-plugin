@@ -1,13 +1,16 @@
 package com.x366.asm;
 
 import com.intellij.codeInsight.navigation.actions.GotoDeclarationHandler;
+import com.intellij.lang.ASTNode;
+import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
-import com.intellij.lang.ASTNode;
 import org.jetbrains.annotations.Nullable;
 
 public class AsmGotoDeclarationHandler implements GotoDeclarationHandler {
+
     @Nullable
     @Override
     public PsiElement[] getGotoDeclarationTargets(@Nullable PsiElement sourceElement, int offset, Editor editor) {
@@ -17,7 +20,6 @@ public class AsmGotoDeclarationHandler implements GotoDeclarationHandler {
         if(!sourceElement.getLanguage().isKindOf(AsmLanguage.INSTANCE)) {
             return null;
         }
-        // only need to handle identifier here
         if(sourceElement.getNode().getElementType() != AsmTokenTypes.IDENTIFIER) {
             return null;
         }
@@ -28,13 +30,25 @@ public class AsmGotoDeclarationHandler implements GotoDeclarationHandler {
             return null;
         }
 
+        // skip unknown labels
+        var vFile = file.getVirtualFile();
+        if(vFile != null) {
+            Document doc = FileDocumentManager.getInstance().getDocument(vFile);
+            if(doc != null && !AsmLabelCache.getLabels(vFile.getPath(), doc).contains(name)) {
+                return null;
+            }
+        }
+
         ASTNode node = file.getNode().getFirstChildNode();
         while(node != null) {
-            if(node.getElementType() == AsmTokenTypes.LABEL) {
-                String labelText = node.getText();
-                String labelName = labelText.endsWith(":") ? labelText.substring(0, labelText.length() - 1) : labelText;
-                if(labelName.equals(name)) {
-                    return new PsiElement[]{node.getPsi()};
+            if(node.getElementType() == AsmTokenTypes.STATEMENT) {
+                ASTNode first = node.getFirstChildNode();
+                if(first != null && first.getElementType() == AsmTokenTypes.LABEL) {
+                    String labelText = first.getText();
+                    String labelName = labelText.endsWith(":") ? labelText.substring(0, labelText.length() - 1) : labelText;
+                    if(labelName.equals(name)) {
+                        return new PsiElement[]{first.getPsi()};
+                    }
                 }
             }
             node = node.getTreeNext();

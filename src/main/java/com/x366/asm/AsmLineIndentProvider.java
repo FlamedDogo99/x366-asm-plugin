@@ -4,28 +4,32 @@ import com.intellij.application.options.CodeStyle;
 import com.intellij.lang.Language;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
+import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.codeStyle.CommonCodeStyleSettings.IndentOptions;
 import com.intellij.psi.codeStyle.lineIndent.LineIndentProvider;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class AsmLineIndentProvider implements LineIndentProvider {
+
     @Nullable
     @Override
     public String getLineIndent(@NotNull Project project, @NotNull Editor editor, @Nullable Language language, int offset) {
-        if(offset == 0) {
+        if(language != null && !language.isKindOf(AsmLanguage.INSTANCE)) {
             return null;
         }
-
-        // only indent when a newline was just typed
+        if(language == null) {
+            var psiFile = PsiDocumentManager.getInstance(project).getPsiFile(editor.getDocument());
+            if(psiFile != null && !psiFile.getLanguage().isKindOf(AsmLanguage.INSTANCE)) {
+                return null;
+            }
+        }
         var doc = editor.getDocument();
-        if(doc.getImmutableCharSequence().charAt(offset - 1) != '\n') {
+        int lineNumber = doc.getLineNumber(offset);
+        if(lineNumber == 0) {
             return null;
         }
 
-        int lineNumber = doc.getLineNumber(offset);
-
-        // check previous non-empty line
         int prevLine = lineNumber - 1;
         while(prevLine >= 0) {
             int start = doc.getLineStartOffset(prevLine);
@@ -34,20 +38,17 @@ public class AsmLineIndentProvider implements LineIndentProvider {
             if(!text.isBlank()) {
                 String trimmed = text.stripLeading();
 
-                // if previous line ends with HLT or RET, dedent to zero
                 if(trimmed.matches("(?i)(HLT|HALT|RET)\\b.*")) {
                     return "";
                 }
 
-                // if previous line ends with a colon, indent
-                if(trimmed.matches("[a-zA-Z_]\\w*:")) {
+                if(trimmed.matches("[a-zA-Z_]\\w*:\\s*")) {
                     String leading = text.substring(0, text.length() - trimmed.length());
                     IndentOptions opts = CodeStyle.getIndentOptions(project, editor.getDocument());
                     String indent = opts.USE_TAB_CHARACTER ? "\t" : " ".repeat(opts.INDENT_SIZE);
                     return leading + indent;
                 }
 
-                // maintain previous indent otherwise
                 int indent = 0;
                 while(indent < text.length() && (text.charAt(indent) == ' ' || text.charAt(indent) == '\t')) {
                     indent++;
@@ -65,6 +66,6 @@ public class AsmLineIndentProvider implements LineIndentProvider {
 
     @Override
     public boolean isSuitableFor(@Nullable Language language) {
-        return language != null && language.isKindOf(AsmLanguage.INSTANCE);
+        return language == null || language.isKindOf(AsmLanguage.INSTANCE);
     }
 }

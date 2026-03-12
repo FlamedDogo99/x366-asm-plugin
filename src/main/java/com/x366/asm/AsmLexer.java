@@ -9,7 +9,7 @@ import java.util.Set;
 
 public class AsmLexer extends LexerBase {
 
-    public static final Set<String> KEYWORD_SET = Set.of("MOV", "MOVB", "ADD", "SUB", "MUL", "DIV", "INC", "DEC", "AND", "OR", "XOR", "NOT", "SHL", "SHR", "CMP", "TEST", "JMP", "JE", "JNE", "JZ", "JNZ", "JG", "JGE", "JL", "JLE", "JA", "JAE", "JB", "JBE", "PUSH", "POP", "CALL", "RET", "SYSCALL", "NOP", "HLT", "HALT", "DB", "DW", "DUP");
+    public static final Set<String> KEYWORD_SET = Set.of("MOV", "MOVB", "ADD", "SUB", "MUL", "DIV", "INC", "DEC", "AND", "OR", "XOR", "NOT", "SHL", "SHR", "CMP", "TEST", "JMP", "JE", "JNE", "JZ", "JNZ", "JG", "JGE", "JL", "JLE", "JA", "JAE", "JB", "JBE", "PUSH", "POP", "CALL", "RET", "SYSCALL", "NOP", "HLT", "HALT", "DB", "DW", "DUP", "LEA", "LOOP");
 
     public static final Set<String> SYSCALL_SET = Set.of("EXIT", "PRINT_CHAR", "PRINT_INT", "PRINT_STRING", "READ_CHAR", "READ_INT", "READ_STRING", "CLEAR_SCREEN", "DRAW_PIXEL", "DRAW_RECT", "DRAW_LINE", "READ_PIXEL", "FLUSH_SCREEN", "SBRK", "MALLOC", "FREE", "ATOI", "SLEEP", "OPEN_FILE", "READ_FILE", "WRITE_FILE", "CLOSE_FILE");
 
@@ -68,13 +68,30 @@ public class AsmLexer extends LexerBase {
 
         char c = buffer.charAt(start);
 
-        // whitespace
-        if(Character.isWhitespace(c)) {
+        // newline  \n, \r\n
+        if(c == '\n' || c == '\r') {
             end = start + 1;
-            while(end < bufferEnd && Character.isWhitespace(buffer.charAt(end))) {
+            if(c == '\r' && end < bufferEnd && buffer.charAt(end) == '\n') {
                 end++;
             }
-            tokenType = AsmTokenTypes.WHITE_SPACE;
+            tokenType = AsmTokenTypes.NEWLINE;
+            return;
+        }
+
+        // space, horizontal whitespaces
+        if(Character.isWhitespace(c)) {
+            end = start + 1;
+            while(end < bufferEnd) {
+                char w = buffer.charAt(end);
+                if(w == '\n' || w == '\r') {
+                    break;
+                }
+                if(!Character.isWhitespace(w)) {
+                    break;
+                }
+                end++;
+            }
+            tokenType = AsmTokenTypes.SPACE;
             return;
         }
 
