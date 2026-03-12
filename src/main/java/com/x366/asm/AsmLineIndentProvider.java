@@ -4,6 +4,7 @@ import com.intellij.application.options.CodeStyle;
 import com.intellij.lang.Language;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
+import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.codeStyle.CommonCodeStyleSettings.IndentOptions;
 import com.intellij.psi.codeStyle.lineIndent.LineIndentProvider;
 import org.jetbrains.annotations.NotNull;
@@ -14,6 +15,15 @@ public class AsmLineIndentProvider implements LineIndentProvider {
     @Nullable
     @Override
     public String getLineIndent(@NotNull Project project, @NotNull Editor editor, @Nullable Language language, int offset) {
+        if(language != null && !language.isKindOf(AsmLanguage.INSTANCE)) {
+            return null;
+        }
+        if(language == null) {
+            var psiFile = PsiDocumentManager.getInstance(project).getPsiFile(editor.getDocument());
+            if(psiFile != null && !psiFile.getLanguage().isKindOf(AsmLanguage.INSTANCE)) {
+                return null;
+            }
+        }
         var doc = editor.getDocument();
         int lineNumber = doc.getLineNumber(offset);
         if(lineNumber == 0) {
