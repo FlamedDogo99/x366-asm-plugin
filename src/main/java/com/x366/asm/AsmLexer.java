@@ -9,7 +9,7 @@ import java.util.Set;
 
 public class AsmLexer extends LexerBase {
 
-    public static final Set<String> KEYWORD_SET = Set.of("MOV", "MOVB", "ADD", "SUB", "MUL", "DIV", "INC", "DEC", "AND", "OR", "XOR", "NOT", "SHL", "SHR", "CMP", "TEST", "JMP", "JE", "JNE", "JZ", "JNZ", "JG", "JGE", "JL", "JLE", "JA", "JAE", "JB", "JBE", "PUSH", "POP", "CALL", "RET", "SYSCALL", "NOP", "HLT", "HALT", "DB", "DW", "DUP");
+    public static final Set<String> KEYWORD_SET = Set.of("MOV", "MOVB", "ADD", "SUB", "MUL", "DIV", "INC", "DEC", "AND", "OR", "XOR", "NOT", "SHL", "SHR", "CMP", "TEST", "JMP", "JE", "JNE", "JZ", "JNZ", "JG", "JGE", "JL", "JLE", "JA", "JAE", "JB", "JBE", "PUSH", "POP", "CALL", "RET", "SYSCALL", "NOP", "HLT", "HALT", "DB", "DW", "DUP", "LEA", "LOOP");
 
     public static final Set<String> SYSCALL_SET = Set.of("EXIT", "PRINT_CHAR", "PRINT_INT", "PRINT_STRING", "READ_CHAR", "READ_INT", "READ_STRING", "CLEAR_SCREEN", "DRAW_PIXEL", "DRAW_RECT", "DRAW_LINE", "READ_PIXEL", "FLUSH_SCREEN", "SBRK", "MALLOC", "FREE", "ATOI", "SLEEP", "OPEN_FILE", "READ_FILE", "WRITE_FILE", "CLOSE_FILE");
 
