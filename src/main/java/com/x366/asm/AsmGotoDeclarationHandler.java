@@ -2,7 +2,9 @@ package com.x366.asm;
 
 import com.intellij.codeInsight.navigation.actions.GotoDeclarationHandler;
 import com.intellij.lang.ASTNode;
+import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import org.jetbrains.annotations.Nullable;
@@ -26,6 +28,15 @@ public class AsmGotoDeclarationHandler implements GotoDeclarationHandler {
         PsiFile file = sourceElement.getContainingFile();
         if(file == null) {
             return null;
+        }
+
+        // skip unknown labels
+        var vFile = file.getVirtualFile();
+        if(vFile != null) {
+            Document doc = FileDocumentManager.getInstance().getDocument(vFile);
+            if(doc != null && !AsmLabelCache.getLabels(vFile.getPath(), doc).contains(name)) {
+                return null;
+            }
         }
 
         ASTNode node = file.getNode().getFirstChildNode();
