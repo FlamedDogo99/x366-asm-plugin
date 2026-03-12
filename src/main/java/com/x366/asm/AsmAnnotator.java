@@ -9,31 +9,10 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 public class AsmAnnotator implements Annotator {
-
-    private static final Pattern LABEL_DEF_PATTERN = Pattern.compile("^[ \\t]*([a-zA-Z_]\\w*):", Pattern.MULTILINE);
-
-    private record CacheEntry(long stamp, Set<String> labels) {
-    }
-
-    private static final int MAX_CACHE = 50;
-    private static final Map<String, CacheEntry> cache = Collections.synchronizedMap(new java.util.LinkedHashMap<>(MAX_CACHE, 0.75f, true) {
-        @Override
-        protected boolean removeEldestEntry(Map.Entry<String, CacheEntry> eldest) {
-            return size() > MAX_CACHE;
-        }
-    });
 
     @Override
     public void annotate(@NotNull PsiElement element, @NotNull AnnotationHolder holder) {
-        // lexer only will make identifier here
         if(element.getNode().getElementType() != AsmTokenTypes.IDENTIFIER) {
             return;
         }
@@ -53,25 +32,8 @@ public class AsmAnnotator implements Annotator {
             return;
         }
 
-        if(!getLabels(vFile.getPath(), doc).contains(element.getText())) {
+        if(!AsmLabelCache.getLabels(vFile.getPath(), doc).contains(element.getText())) {
             holder.newAnnotation(HighlightSeverity.WARNING, "Unresolved label '" + element.getText() + "'").range(element).create();
         }
-    }
-
-    private static Set<String> getLabels(String filePath, Document doc) {
-        long stamp = doc.getModificationStamp();
-        CacheEntry entry = cache.get(filePath);
-        if(entry != null && entry.stamp() == stamp) {
-            return entry.labels();
-        }
-
-        Set<String> labels = new HashSet<>();
-        Matcher matcher = LABEL_DEF_PATTERN.matcher(doc.getImmutableCharSequence());
-        while(matcher.find()) {
-            labels.add(matcher.group(1));
-        }
-
-        cache.put(filePath, new CacheEntry(stamp, labels));
-        return labels;
     }
 }
