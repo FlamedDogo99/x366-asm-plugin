@@ -18,40 +18,55 @@ public class AsmFoldingBuilder extends FoldingBuilderEx {
     @NotNull
     public FoldingDescriptor[] buildFoldRegions(@NotNull PsiElement root, @NotNull Document document, boolean quick) {
         List<FoldingDescriptor> descriptors = new ArrayList<>();
-        List<ASTNode> commentRun = new ArrayList<>();
+
+        foldCommentRuns(root, document, descriptors);
 
         ASTNode node = root.getNode().getFirstChildNode();
         while(node != null) {
             if(node.getElementType() == AsmTokenTypes.STATEMENT) {
                 ASTNode firstToken = node.getFirstChildNode();
-
-                if(firstToken != null && firstToken.getElementType() == AsmTokenTypes.COMMENT) {
-                    commentRun.add(firstToken);
-                } else {
-                    flushCommentRun(commentRun, root, descriptors);
-                    commentRun.clear();
-
-                    if(firstToken != null && firstToken.getElementType() == AsmTokenTypes.LABEL) {
-                        foldLabelSection(node, root, document, descriptors);
-                    }
+                if(firstToken != null && firstToken.getElementType() == AsmTokenTypes.LABEL) {
+                    foldLabelSection(node, root, document, descriptors);
                 }
             }
             node = node.getTreeNext();
         }
-        flushCommentRun(commentRun, root, descriptors);
 
         return descriptors.toArray(FoldingDescriptor[]::new);
     }
 
-    private void flushCommentRun(List<ASTNode> run, PsiElement root, List<FoldingDescriptor> descriptors) {
-        if(run.size() < 3) {
-            return;
+    private void foldCommentRuns(@NotNull PsiElement root, @NotNull Document document, List<FoldingDescriptor> descriptors) {
+        int lineCount = document.getLineCount();
+        int runStart = -1;
+        int runEnd = -1;
+        String firstCommentText = "";
+        int consecutiveComments = 0;
+
+        for(int i = 0; i < lineCount; i++) {
+            int start = document.getLineStartOffset(i);
+            int end = document.getLineEndOffset(i);
+            String line = document.getImmutableCharSequence().subSequence(start, end).toString().stripLeading();
+
+            if(line.startsWith(";")) {
+                if(consecutiveComments == 0) {
+                    runStart = start;
+                    firstCommentText = line;
+                }
+                runEnd = end;
+                consecutiveComments++;
+            } else {
+                if(consecutiveComments >= 3) {
+                    descriptors.add(new FoldingDescriptor(root.getNode(), new TextRange(runStart, runEnd), null, firstCommentText + " ..."));
+                }
+                consecutiveComments = 0;
+                runStart = -1;
+                firstCommentText = "";
+            }
         }
-        ASTNode first = run.get(0);
-        ASTNode last = run.get(run.size() - 1);
-        TextRange range = new TextRange(first.getStartOffset(), last.getStartOffset() + last.getTextLength());
-        String placeholder = first.getText().strip() + " ...";
-        descriptors.add(new FoldingDescriptor(root.getNode(), range, null, placeholder));
+
+        if(consecutiveComments >= 3) {
+            descriptors.add(new FoldingDescriptor(root.getNode(), new TextRange(runStart, runEnd), null, firstCommentText + " ..."));
+        }
     }
 
     private void foldLabelSection(ASTNode labelStmt, PsiElement root, Document document, List<FoldingDescriptor> descriptors) {

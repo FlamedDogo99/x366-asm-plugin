@@ -17,7 +17,12 @@ public class AsmFindUsagesProvider implements FindUsagesProvider {
 
     @Override
     public boolean canFindUsagesFor(@NotNull PsiElement element) {
-        return element.getNode().getElementType() == AsmTokenTypes.LABEL;
+        var node = element.getNode();
+        if(node.getElementType() == AsmTokenTypes.STATEMENT) {
+            var first = node.getFirstChildNode();
+            return first != null && first.getElementType() == AsmTokenTypes.LABEL;
+        }
+        return node.getElementType() == AsmTokenTypes.LABEL;
     }
 
     @Override
@@ -27,14 +32,22 @@ public class AsmFindUsagesProvider implements FindUsagesProvider {
 
     @Override
     public @NotNull String getDescriptiveName(@NotNull PsiElement element) {
-        // we get a LeafPsiElement here
-        String text = element.getText();
+        String text = labelText(element);
         return text.endsWith(":") ? text.substring(0, text.length() - 1) : text;
     }
 
     @Override
     public @NotNull String getNodeText(@NotNull PsiElement element, boolean useFullName) {
         return getDescriptiveName(element);
+    }
+
+    private String labelText(@NotNull PsiElement element) {
+        var node = element.getNode();
+        if(node.getElementType() == AsmTokenTypes.STATEMENT) {
+            var first = node.getFirstChildNode();
+            return first != null ? first.getText() : element.getText();
+        }
+        return element.getText();
     }
 
     @Override

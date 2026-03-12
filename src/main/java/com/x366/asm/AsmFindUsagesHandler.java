@@ -9,6 +9,9 @@ import com.intellij.usageView.UsageInfo;
 import com.intellij.util.Processor;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class AsmFindUsagesHandler extends FindUsagesHandler {
 
     public AsmFindUsagesHandler(@NotNull PsiElement element) {
@@ -17,30 +20,37 @@ public class AsmFindUsagesHandler extends FindUsagesHandler {
 
     @Override
     public boolean processElementUsages(@NotNull PsiElement element, @NotNull Processor<? super UsageInfo> processor, @NotNull com.intellij.find.findUsages.FindUsagesOptions options) {
-
-        String labelText = element.getText();
-        String labelName = labelText.endsWith(":") ? labelText.substring(0, labelText.length() - 1) : labelText;
+        String rawText = element.getText();
+        String labelName = rawText.endsWith(":") ? rawText.substring(0, rawText.length() - 1) : rawText;
 
         PsiFile file = element.getContainingFile();
         if(file == null) {
             return true;
         }
 
-        ASTNode node = file.getNode().getFirstChildNode();
-        while(node != null) {
-            if(node.getElementType() == AsmTokenTypes.IDENTIFIER && node.getText().equals(labelName)) {
-                ASTNode finalNode = node;
-                boolean shouldContinue = ReadAction.compute(() -> {
-                    UsageInfo usage = new UsageInfo(finalNode.getPsi());
-                    return processor.process(usage);
-                });
-                if(!shouldContinue) {
-                    return false;
+        List<PsiElement> matches = ReadAction.compute(() -> {
+            List<PsiElement> found = new ArrayList<>();
+            ASTNode node = file.getNode().getFirstChildNode();
+            while(node != null) {
+                if(node.getElementType() == AsmTokenTypes.STATEMENT) {
+                    ASTNode child = node.getFirstChildNode();
+                    while(child != null) {
+                        if(child.getElementType() == AsmTokenTypes.IDENTIFIER && child.getText().equals(labelName)) {
+                            found.add(child.getPsi());
+                        }
+                        child = child.getTreeNext();
+                    }
                 }
+                node = node.getTreeNext();
             }
-            node = node.getTreeNext();
-        }
+            return found;
+        });
 
+        for(PsiElement match : matches) {
+            if(!processor.process(new UsageInfo(match))) {
+                return false;
+            }
+        }
         return true;
     }
 }
