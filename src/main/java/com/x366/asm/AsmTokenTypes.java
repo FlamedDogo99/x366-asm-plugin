@@ -18,5 +18,6 @@ public interface AsmTokenTypes {
     IElementType OPERATOR = new AsmElementType("OPERATOR");
     IElementType DELIMITER = new AsmElementType("DELIMITER");
     IElementType BAD_CHARACTER = new AsmElementType("BAD_CHARACTER");
-    IElementType WHITE_SPACE = TokenType.WHITE_SPACE;
+    IElementType SPACE = new AsmElementType("SPACE");
+    IElementType NEWLINE = new AsmElementType("NEWLINE");
 }

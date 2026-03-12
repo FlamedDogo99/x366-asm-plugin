@@ -68,13 +68,30 @@ public class AsmLexer extends LexerBase {
 
         char c = buffer.charAt(start);
 
-        // whitespace
-        if(Character.isWhitespace(c)) {
+        // newline  \n, \r\n
+        if(c == '\n' || c == '\r') {
             end = start + 1;
-            while(end < bufferEnd && Character.isWhitespace(buffer.charAt(end))) {
+            if(c == '\r' && end < bufferEnd && buffer.charAt(end) == '\n') {
                 end++;
             }
-            tokenType = AsmTokenTypes.WHITE_SPACE;
+            tokenType = AsmTokenTypes.NEWLINE;
+            return;
+        }
+
+        // space, horizontal whitespaces
+        if(Character.isWhitespace(c)) {
+            end = start + 1;
+            while(end < bufferEnd) {
+                char w = buffer.charAt(end);
+                if(w == '\n' || w == '\r') {
+                    break;
+                }
+                if(!Character.isWhitespace(w)) {
+                    break;
+                }
+                end++;
+            }
+            tokenType = AsmTokenTypes.SPACE;
             return;
         }
 

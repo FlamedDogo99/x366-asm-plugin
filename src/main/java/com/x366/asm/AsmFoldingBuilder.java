@@ -27,7 +27,7 @@ public class AsmFoldingBuilder extends FoldingBuilderEx {
 
             if(type == AsmTokenTypes.COMMENT) {
                 commentRun.add(node);
-            } else if(type != AsmTokenTypes.WHITE_SPACE) {
+            } else if(type != AsmTokenTypes.SPACE && type != AsmTokenTypes.NEWLINE) {
                 flushCommentRun(commentRun, root, descriptors);
                 commentRun.clear();
 
@@ -67,7 +67,7 @@ public class AsmFoldingBuilder extends FoldingBuilderEx {
             if(cursor.getElementType() == AsmTokenTypes.LABEL) {
                 break;
             }
-            if(cursor.getElementType() != AsmTokenTypes.WHITE_SPACE) {
+            if(cursor.getElementType() != AsmTokenTypes.SPACE && cursor.getElementType() != AsmTokenTypes.NEWLINE) {
                 lastContent = cursor;
             }
             cursor = cursor.getTreeNext();

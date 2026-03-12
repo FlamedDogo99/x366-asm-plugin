@@ -52,7 +52,7 @@ public class AsmParserDefinition implements ParserDefinition {
 
     @Override
     public @NotNull TokenSet getWhitespaceTokens() {
-        return TokenSet.create(AsmTokenTypes.WHITE_SPACE);
+        return TokenSet.create(AsmTokenTypes.SPACE, AsmTokenTypes.NEWLINE);
     }
 
     @Override
