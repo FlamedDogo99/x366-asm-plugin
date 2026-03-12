@@ -9,9 +9,6 @@ import com.intellij.usageView.UsageInfo;
 import com.intellij.util.Processor;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class AsmFindUsagesHandler extends FindUsagesHandler {
 
     public AsmFindUsagesHandler(@NotNull PsiElement element) {
@@ -28,29 +25,23 @@ public class AsmFindUsagesHandler extends FindUsagesHandler {
             return true;
         }
 
-        List<PsiElement> matches = ReadAction.compute(() -> {
-            List<PsiElement> found = new ArrayList<>();
+        return ReadAction.compute(() -> {
             ASTNode node = file.getNode().getFirstChildNode();
             while(node != null) {
                 if(node.getElementType() == AsmTokenTypes.STATEMENT) {
                     ASTNode child = node.getFirstChildNode();
                     while(child != null) {
                         if(child.getElementType() == AsmTokenTypes.IDENTIFIER && child.getText().equals(labelName)) {
-                            found.add(child.getPsi());
+                            if(!processor.process(new UsageInfo(child.getPsi()))) {
+                                return false;
+                            }
                         }
                         child = child.getTreeNext();
                     }
                 }
                 node = node.getTreeNext();
             }
-            return found;
+            return true;
         });
-
-        for(PsiElement match : matches) {
-            if(!processor.process(new UsageInfo(match))) {
-                return false;
-            }
-        }
-        return true;
     }
 }

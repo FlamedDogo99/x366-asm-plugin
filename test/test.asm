@@ -35,6 +35,8 @@ loop_top:
     ADD AX, BX
     CMP AX, 100
     JNE loop_top
+    JE loop_top
+
     JMP done
 
 ; code completion: correct param suggestions
